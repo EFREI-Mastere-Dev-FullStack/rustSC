@@ -1,8 +1,20 @@
 [package]
-name = "rustSC"
+name = "rust_sc"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bevy = "0.13.2"
+
+# TODO: Supprimer les lignes ci-dessous pour la version final
+# Elles permettent de reduire l'execution en mode dev/debug
+
+# Enable a small amount of optimization in debug mode
+[profile.dev]
+opt-level = 1
+
+# Enable high optimizations for dependencies (incl. Bevy), but not for our code:
+[profile.dev.package."*"]
+opt-level = 3
