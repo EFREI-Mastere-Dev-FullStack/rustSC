@@ -1,15 +1,19 @@
 pub enum Terrain {
     Wall,
     Resource,
+    Energy,
     Ground,
+    Robot
 }
 
 impl Terrain {
     pub fn to_char(&self) -> char {
         match self {
-            Terrain::Wall => '#',
-            Terrain::Resource => '0',
+            Terrain::Wall => '▓',
+            Terrain::Resource => '♦',
             Terrain::Ground => ' ',
+            Terrain::Energy => '♥',
+            Terrain::Robot => '☻'
         }
     }
 
@@ -22,13 +26,9 @@ impl Terrain {
 }
 
 pub fn get_char(val: f64) -> char {
-    let char_res = match val.abs() {
-        v if v < 0.1 => Terrain::Ground,
-        v if v < 0.2 => Terrain::Wall, // wall
-        v if v < 0.6 => Terrain::Ground,
-        v if v < 0.9 => Terrain::Resource,
-        v if v <= 1.0 => Terrain::Ground,
-        _ => panic!("unexpected value")
-    };
-    char_res.to_char()
+    match val.abs() {
+        v if v < 0.25 => Terrain::Ground.to_char(),   // Ground 60%
+        v if v < 0.50 => Terrain::Wall.to_char(),   // Wall 25%
+        _ => {Terrain::Ground.to_char()}
+    }
 }
