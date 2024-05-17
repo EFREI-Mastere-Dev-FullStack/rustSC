@@ -31,4 +31,3 @@ pub fn move_robot(pos: &mut (usize, usize), width: usize, height: usize, map: &M
     }
 }
 
-

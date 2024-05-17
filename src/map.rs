@@ -65,6 +65,11 @@ impl Map {
             }
         }
 
+        map[center_y][center_x] = '╔';
+        map[center_y][center_x + 1] = '╗';
+        map[center_y + 1][center_x] = '╚';
+        map[center_y + 1][center_x + 1] = '╝';
+
         Map { data: map }
     }
 
