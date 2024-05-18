@@ -4,26 +4,48 @@ mod utils;
 mod map;
 mod robot;
 
+use std::io;
 use std::time::Duration;
 use std::thread::sleep;
+
 use rand::{Rng, thread_rng};
 use map::Map;
-use robot::move_robot;
+use robot::Robot;
 
 fn main() {
-    let width = 100;
+    let width = 80;
     let height = 40;
-    let mut rng = thread_rng();
-    let seed: u32 = rng.gen();
 
+    println!("Entrez la seed :");
+
+    let mut input = String::new();
+    let mut seed: u32 = 0;
+    io::stdin().read_line(&mut input).expect("Erreur lors de la lecture de l'entrée");
+
+    if !input.trim().is_empty() {
+        seed = input.trim().parse().expect("Entrée invalide");
+    } else {
+        let mut rng = thread_rng();
+        seed = rng.gen();
+    }
     println!("Generating map with seed: {}", seed);
-    let map: Map = Map::new(width, height, seed);
-    let mut robot_pos = (width / 2, height / 2);
+    let mut map: Map = Map::new(width, height, seed);
+    let robot: Robot = Robot::new(width / 2, height / 2, &mut map);
+    map.add_robot(robot);
+    let robot2: Robot = Robot::new(width / 2 +1, height / 2, &mut map);
+    map.add_robot(robot2);
+    let robot3: Robot = Robot::new(width / 2, height / 2+1, &mut map);
+    map.add_robot(robot3);
+    let robot4: Robot = Robot::new(width / 2+1, height / 2+1, &mut map);
+    map.add_robot(robot4);
 
     loop {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-        map.print_map(robot_pos);
-        move_robot(&mut robot_pos, width, height, &map);
+
+        map.print_map();
+        map.move_robots();
+        map.update_known_maps();
+
         sleep(Duration::from_millis(200));
     }
 }
