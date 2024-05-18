@@ -95,6 +95,7 @@ impl Robot {
         !Terrain::Wall.is_char(self.known_map.get_cell(x, y))
             && !Terrain::Mountain.is_char(self.known_map.get_cell(x, y))
             && !Terrain::Robot.is_char(self.known_map.get_cell(x, y))
+            && !Terrain::Void.is_char(self.known_map.get_cell(x, y))
     }
 
     pub fn set_cell(&mut self, position: Position, val: char) {
@@ -111,9 +112,9 @@ impl Robot {
                 let x = robot_x as isize + dx;
                 let y = robot_y as isize + dy;
 
-                if x > 0 && y > 0 {
-                    let cell_value = map.get_cell(x as usize, y as usize);
-                    self.set_cell(Position {x: y as usize, y: x as usize}, cell_value.unwrap());
+                let cell_value = map.get_cell(x as usize, y as usize);
+                if !cell_value.is_none() {
+                    self.set_cell(Position { x: y as usize, y: x as usize }, cell_value.unwrap());
                 }
             }
         }
