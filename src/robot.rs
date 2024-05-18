@@ -1,8 +1,8 @@
 extern crate rand;
 
 use rand::Rng;
-use crate::utils::Terrain;
 use crate::map::{EMap, Map};
+use crate::terrain::Terrain;
 
 pub struct Position {
     pub(crate) x: usize,

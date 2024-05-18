@@ -1,46 +1,17 @@
 use noise::{NoiseFn, Perlin};
-use crate::utils::{get_char, Terrain};
+use crate::utils::{get_char};
 use rand::Rng;
 use robot::Robot;
+use crate::e_map::EMap;
 use crate::robot;
 use crate::robot::Position;
-
-pub struct EMap {
-    width: usize,
-    height: usize,
-    pub(crate) data: Vec<Vec<char>>
-}
-
-impl EMap {
-    pub fn new(width: usize, height: usize, terrain: Terrain) -> EMap {
-        EMap {width, height, data: vec![vec![terrain.to_char(); width]; height]}
-    }
-
-    pub fn get_cell(&self, x: usize, y: usize) -> Option<char> {
-        if let Some(row) = self.data.get(y) {
-            if let Some(&cell) = row.get(x) {
-                return Some(cell);
-            }
-        }
-        None
-    }
-
-    pub fn set_cell(&mut self, position: Position, val: char) {
-        self.data[position.x][position.y] = val;
-    }
-
-    pub fn width(&self) -> usize {
-        self.data[0].len()
-    }
-
-    pub fn height(&self) -> usize {
-        self.data.len()
-    }
-}
+use crate::terrain::Terrain;
+use crate::base::Base;
 
 pub struct Map {
     pub(crate) data: EMap,
     robots: Vec<Robot>,
+    base: Base,
     seed: u32
 }
 
@@ -105,7 +76,7 @@ impl Map {
         map.set_cell(Position {x: center_y + 1, y: center_x}, '╚');
         map.set_cell(Position {x: center_y + 1, y: center_x + 1}, '╝');
 
-        Map {data: map, robots: Vec::new(), seed}
+        Map {data: map, robots: Vec::new(), seed: seed, base: Base::new(width, height)}
     }
 
     pub fn add_robot(&mut self, robot: Robot) {
