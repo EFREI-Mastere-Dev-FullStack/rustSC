@@ -1,9 +1,9 @@
 extern crate noise;
 extern crate rand;
 mod utils;
-mod map;
+mod game;
 mod robot;
-mod e_map;
+mod map;
 mod base;
 mod terrain;
 
@@ -12,7 +12,7 @@ use std::time::Duration;
 use std::thread::sleep;
 
 use rand::{Rng, thread_rng};
-use map::Map;
+use game::Game;
 use robot::Robot;
 
 // debug main
@@ -34,24 +34,33 @@ fn main() {
     }*/
     let seed: u32 = 1521335673;
     println!("Generating map with seed: {}", seed);
-    let mut map: Map = Map::new(width, height, seed);
-    let robot: Robot = Robot::new(width / 2, height / 2, &mut map);
-    map.add_robot(robot);
-    let robot2: Robot = Robot::new(width / 2 +1, height / 2, &mut map);
-    map.add_robot(robot2);
-    let robot3: Robot = Robot::new(width / 2, height / 2+1, &mut map);
-    map.add_robot(robot3);
-    let robot4: Robot = Robot::new(width / 2+1, height / 2+1, &mut map);
-    map.add_robot(robot4);
-    map.update_known_maps();
-    map.robots()[0].print_map(seed);
+    let mut game: Game = Game::new(width, height, seed);
+    let robot: Robot = Robot::new(width / 2, height / 2, &mut game);
+    game.add_robot(robot);
+    let robot2: Robot = Robot::new(width / 2 +1, height / 2, &mut game);
+    game.add_robot(robot2);
+    let robot3: Robot = Robot::new(width / 2, height / 2+1, &mut game);
+    game.add_robot(robot3);
+    let robot4: Robot = Robot::new(width / 2+1, height / 2+1, &mut game);
+    game.add_robot(robot4);
+
+    game.update_known_maps();
+
     loop {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
 
-        map.print_map();
-        //map.robots()[0].print_map(seed);
-        map.move_robots();
-        map.update_known_maps();
+        //game.print_map();
+        //game.robots()[0].print_map(seed);
+        game.move_robots();
+        game.update_known_maps();
+        game.base.merge_map(&mut game.robots[0]);
+        game.base.print_merged_map(&mut game.robots);
+        game.base.merge_map(&mut game.robots[1]);
+        game.base.merge_map(&mut game.robots[2]);
+        game.base.merge_map(&mut game.robots[3]);
+
+        game.base.print_merged_map(&mut game.robots);
+        //game.robots()[0].print_map(seed);
 
         sleep(Duration::from_millis(200));
     }
@@ -76,23 +85,23 @@ fn main() {
     }
 
     println!("Generating map with seed: {}", seed);
-    let mut map: Map = Map::new(width, height, seed);
-    let robot: Robot = Robot::new(width / 2, height / 2, &mut map);
-    map.add_robot(robot);
-    let robot2: Robot = Robot::new(width / 2 +1, height / 2, &mut map);
-    map.add_robot(robot2);
-    let robot3: Robot = Robot::new(width / 2, height / 2+1, &mut map);
-    map.add_robot(robot3);
-    let robot4: Robot = Robot::new(width / 2+1, height / 2+1, &mut map);
-    map.add_robot(robot4);
-    map.update_known_maps();
-    map.robots()[0].print_map(seed);
+    let mut game: Game = Game::new(width, height, seed);
+    let robot: Robot = Robot::new(width / 2, height / 2, &mut game);
+    game.add_robot(robot);
+    let robot2: Robot = Robot::new(width / 2 +1, height / 2, &mut game);
+    game.add_robot(robot2);
+    let robot3: Robot = Robot::new(width / 2, height / 2+1, &mut game);
+    game.add_robot(robot3);
+    let robot4: Robot = Robot::new(width / 2+1, height / 2+1, &mut game);
+    game.add_robot(robot4);
+    game.update_known_maps();
+    game.robots()[0].print_map(seed);
     loop {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
 
-        map.print_map();
-        map.move_robots();
-        map.update_known_maps();
+        game.print_map();
+        game.move_robots();
+        game.update_known_maps();
 
         sleep(Duration::from_millis(200));
     }

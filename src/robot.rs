@@ -1,9 +1,12 @@
 extern crate rand;
 
+use std::cmp::PartialEq;
 use rand::Rng;
-use crate::map::{EMap, Map};
+use crate::map::Map;
+use crate::game::Game;
 use crate::terrain::Terrain;
 
+#[derive(Clone, Copy)]
 pub struct Position {
     pub(crate) x: usize,
     pub(crate) y: usize
@@ -21,16 +24,22 @@ impl Position {
 
 pub struct Robot {
     position: Position,
-    known_map: EMap,
-    resource: bool,
+    pub(crate) known_map: Map,
+    resource: Terrain,
+}
+
+impl PartialEq for Terrain {
+    fn eq(&self, other: &Self) -> bool {
+        self.to_char() == other.to_char()
+    }
 }
 
 impl Robot {
-    pub fn new(x: usize, y: usize, map: &mut Map) -> Robot {
+    pub fn new(x: usize, y: usize, game: &mut Game) -> Robot {
         Robot {
             position: Position::new(x, y),
-            known_map: EMap::new(map.width(), map.height(), Terrain::Void),
-            resource: false,
+            known_map: Map::new(game.width(), game.height(), Terrain::Void),
+            resource: Terrain::Void,
         }
     }
 
@@ -52,16 +61,20 @@ impl Robot {
         print!("{}", seed.to_string());
     }
 
+    pub fn set_known_map(&mut self, map: Map) {
+        self.known_map = map;
+    }
+
     pub fn position(&self) -> &Position {
         &self.position
     }
 
-    pub fn known_map(&self) -> &EMap {
-        &self.known_map
+    pub fn known_map(&mut self) -> &mut Map {
+        &mut self.known_map
     }
 
     pub fn is_carrying(&self) -> bool {
-        self.resource
+        !(self.resource == Terrain::Void)
     }
 
     pub fn move_robot(&mut self, width: usize, height: usize) {
@@ -98,11 +111,26 @@ impl Robot {
             && !Terrain::Void.is_char(self.known_map.get_cell(x, y))
     }
 
+    fn on_resource(&mut self) {
+        if Terrain::Energy.is_char(self.known_map.get_cell(self.position().x, self.position().y))
+            || Terrain::Ore.is_char(self.known_map.get_cell(self.position().x, self.position().y)) {
+            self.take_resource();
+        }
+    }
+
+    fn take_resource(&mut self) {
+        if let Some(cell) = self.known_map.get_cell(self.position().x, self.position().y) {
+            if !Some(cell).is_none() && !self.is_carrying() {
+                self.resource = Terrain::from_char(cell);
+            }
+        }
+    }
+
     pub fn set_cell(&mut self, position: Position, val: char) {
         self.known_map.set_cell(position, val);
     }
 
-    pub fn update_known_map(&mut self, map: &EMap) {
+    pub fn update_known_map(&mut self, map: &Map) {
         let radius = 3;
 
         let (robot_x, robot_y) = (self.position.x, self.position.y);

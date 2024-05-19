@@ -1,7 +1,7 @@
 pub enum Terrain {
     Wall,
     Mountain,
-    Resource,
+    Ore, // minerai en fr
     Energy,
     Ground,
     Robot,
@@ -13,11 +13,11 @@ impl Terrain {
         match self {
             Terrain::Wall => '▒',
             Terrain::Mountain => '▓',
-            Terrain::Resource => '♦',
-            Terrain::Ground => ' ', // for debug then ' '
+            Terrain::Ore => '♦',
+            Terrain::Ground => '.', // for debug then ' '
             Terrain::Energy => '♥',
             Terrain::Robot => '☻',
-            Terrain::Void => ' ',
+            Terrain::Void => ' ', // for debug then '.'
         }
     }
 
@@ -25,7 +25,7 @@ impl Terrain {
         match val {
             '▒' => Terrain::Wall,
             '▓' => Terrain::Mountain,
-            '♦' => Terrain::Resource,
+            '♦' => Terrain::Ore,
             '.' => Terrain::Ground, // for debug then ' '
             '♥' => Terrain::Energy,
             '☻' => Terrain::Robot,
