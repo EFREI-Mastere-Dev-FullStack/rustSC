@@ -1,6 +1,5 @@
 use noise::{NoiseFn, Perlin};
 use crate::utils::{get_char};
-use rand::Rng;
 use robot::Robot;
 use crate::map::Map;
 use crate::robot;
@@ -26,36 +25,6 @@ impl Game {
                 let value = perlin.get([x as f64 * scale, y as f64 * scale, seed as f64]);
                 map.set_cell(Position {x: y, y: x}, get_char(value));
             }
-        }
-
-        let mut rng = rand::thread_rng();
-
-        let resource_density = 0.01;
-        for _ in 0..(width as f64 * height as f64 * resource_density) as usize {
-            let mut x;
-            let mut y;
-            loop {
-                x = rng.gen_range(0..width);
-                y = rng.gen_range(0..height);
-                if not_near_a_wall_and_valid(width, height, x, y, &map) {
-                    break;
-                }
-            }
-            map.set_cell(Position {x: y, y: x}, Terrain::Ore.to_char());
-        }
-
-        let energy_density = 0.01;
-        for _ in 0..(width as f64 * height as f64 * energy_density) as usize {
-            let mut x;
-            let mut y;
-            loop {
-                x = rng.gen_range(0..width);
-                y = rng.gen_range(0..height);
-                if not_near_a_wall_and_valid(width, height, x, y, &map) {
-                    break;
-                }
-            }
-            map.set_cell(Position {x: y, y: x}, Terrain::Energy.to_char());
         }
 
         let center_x = width / 2;
