@@ -12,7 +12,9 @@ pub struct Game {
     pub(crate) map: Map,
     pub(crate) robots: Vec<Robot>,
     pub(crate) base: Base,
-    seed: u32
+    seed: u32,
+    resources_to_create: usize,
+    point: usize,
 }
 
 impl Game {
@@ -46,7 +48,7 @@ impl Game {
         map.set_cell(Position {x: center_y + 1, y: center_x}, '╚');
         map.set_cell(Position {x: center_y + 1, y: center_x + 1}, '╝');
 
-        Game { map: map, robots: Vec::new(), seed: seed, base: Base::new(width, height, center_y, center_x)}
+        Game { map: map, robots: Vec::new(), seed: seed, base: Base::new(width, height, center_y, center_x), resources_to_create: 1, point: 0}
     }
 
     pub fn add_robot(&mut self, robot: Robot) {
@@ -70,10 +72,8 @@ impl Game {
     }
 
     pub fn move_robots(&mut self) {
-        let width = self.width();
-        let height = self.height();
         for robot in &mut self.robots {
-            robot.move_robot(width, height, &mut self.map, &mut self.base);
+            robot.move_robot(&mut self.map, &mut self.base);
         }
     }
 
@@ -101,12 +101,21 @@ impl Game {
             }
 
             if y == 0 {
-                print!("   | Energy: {}, Ore: {}, Science: {}", self.base.energy, self.base.ores, self.base.science);
+                print!("   | Energy: {}, Ore: {}, Science: {}, Robots: {}", self.base.energy, self.base.ores, self.base.science, self.robots.len());
             }
             for (i, _) in self.robots.iter().enumerate() {
                 if y < self.robots.len() + 1 {
                     if y == i + 1 {
-                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {}, On: {}", &self.robots[i].mission().to_string(), &self.robots[i].position().x, &self.robots[i].position().y, &self.robots[i].resource().to_char(), &self.get_cell(self.robots[i].position().x, self.robots[i].position().y).unwrap())
+                        let goal_cell = if &self.robots[i].goal().is_none() {' '} else {self.map.get_cell(self.robots[i].goal().unwrap().x, self.robots[i].goal().unwrap().y).unwrap()};
+                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {}, Goal: {} in (x: {}, y: {})",
+                               &self.robots[i].mission().to_string(),
+                               &self.robots[i].position().x,
+                               &self.robots[i].position().y,
+                               &self.robots[i].resource().to_char(),
+                               goal_cell,
+                               &self.robots[i].goal().unwrap_or_else(|| Position{x:0, y:0}).y,
+                               &self.robots[i].goal().unwrap_or_else(|| Position{x:0, y:0}).x
+                        )
                     }
                 }
             }
@@ -115,14 +124,32 @@ impl Game {
         print!("{}", self.seed);
     }
 
-    pub fn count_robots(&mut self, robot_type: Robot_type) -> usize {
-        let mut count:usize = 0;
-        for robot in &mut self.robots {
-            if *robot.mission() == robot_type {
-                count +=1;
-            }
+    pub fn count_robots(&self, robot_type: Robot_type) -> usize {
+        self.robots.iter().filter(|robot| robot.mission().to_string() == robot_type.to_string()).count()
+    }
+
+    pub fn create_robot(&mut self) {
+        if self.base.energy >= self.resources_to_create && self.base.ores >= self.resources_to_create {
+            let scout_count = self.count_robots(Robot_type::Scout);
+            let harvester_count = self.count_robots(Robot_type::Harvester);
+            let scientist_count = self.count_robots(Robot_type::Scientist);
+            print!("{}, {}, {}", scout_count, scientist_count, harvester_count);
+            let robot_type = if scout_count <= harvester_count && scout_count <= scientist_count {
+                Robot_type::Scout
+            } else if scientist_count <= scout_count && scientist_count <= harvester_count {
+                Robot_type::Scientist
+            } else if harvester_count <= scout_count && harvester_count <= scientist_count {
+                Robot_type::Harvester
+            } else {
+                Robot_type::Scout
+            };
+
+            let new_robot: Robot = Robot::new(self.base.coordinates.y, self.base.coordinates.x, robot_type, self);
+            self.add_robot(new_robot);
+            self.base.energy -= self.resources_to_create;
+            self.base.ores -= self.resources_to_create;
+            self.resources_to_create += 1;
         }
-        count
     }
 }
 

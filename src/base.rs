@@ -1,6 +1,4 @@
-use std::cmp::Ordering;
 use std::collections::VecDeque;
-use crate::game::Game;
 use crate::map::Map;
 use crate::robot::{Position, Robot};
 use crate::robot_type::Robot_type;
@@ -13,7 +11,8 @@ pub struct Base {
     shared_map: Map,
     pub(crate) coordinates: Position,
     science_queue: VecDeque<Position>,
-    resource_queue: VecDeque<Position>
+    resource_queue: VecDeque<Position>,
+    detected_resources: Vec<Position>
 }
 
 impl Base {
@@ -25,7 +24,8 @@ impl Base {
             shared_map: Map::new(width, height, Terrain::Void),
             coordinates: Position {x: center_x, y: center_y},
             science_queue: VecDeque::new(),
-            resource_queue: VecDeque::new()
+            resource_queue: VecDeque::new(),
+            detected_resources: Vec::new()
         }
     }
 
@@ -52,7 +52,16 @@ impl Base {
             for (i, _) in robots.iter().enumerate() {
                 if y < robots.len() + 1 {
                     if y == i + 1 {
-                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {}, On: {}", robots[i].mission().to_string(), robots[i].position().x, robots[i].position().y, robots[i].resource().to_char(), &self.shared_map.get_cell(robots[i].position().x, robots[i].position().y).unwrap())
+                        let goal_cell = if robots[i].goal().is_none() {' '} else {self.shared_map.get_cell(robots[i].goal().unwrap().x, robots[i].goal().unwrap().y).unwrap()};
+                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {}, Goal: {} in (x: {}, y: {})",
+                               robots[i].mission().to_string(),
+                               robots[i].position().x,
+                               robots[i].position().y,
+                               robots[i].resource().to_char(),
+                               goal_cell,
+                               robots[i].goal().unwrap_or_else(|| Position{x:0, y:0}).y,
+                               robots[i].goal().unwrap_or_else(|| Position{x:0, y:0}).x
+                        )
                     }
                 }
             }
@@ -68,6 +77,26 @@ impl Base {
         self.shared_map = map;
     }
 
+    pub fn pop_science_queue(&mut self) -> Option<Position> {
+        self.science_queue.pop_front()
+    }
+
+    pub fn pop_resource_queue(&mut self) -> Option<Position> {
+        self.resource_queue.pop_front()
+    }
+
+    pub fn resource_queue(&self) -> &VecDeque<Position> {
+        &self.resource_queue
+    }
+
+    pub fn science_queue(&self) -> &VecDeque<Position> {
+        &self.science_queue
+    }
+
+    pub fn detected_resources(&self) -> &Vec<Position> {
+        &self.detected_resources
+    }
+
     pub fn merge_map(&mut self, robot: &mut Robot) {
         let width = self.shared_map.width();
         let height = self.shared_map.height();
@@ -80,23 +109,37 @@ impl Base {
                 let robot_cell = robot.known_map().get_cell(y, x);
 
                 let cell = match (base_cell, robot_cell) {
+                    (Some(b_cell), Some(r_cell)) if Terrain::Science.is_char(Some(b_cell)) && Terrain::Ground.is_char(Some(r_cell)) => r_cell,
+                    (Some(b_cell), Some(r_cell)) if Terrain::Ground.is_char(Some(b_cell)) && Terrain::Science.is_char(Some(r_cell)) => b_cell,
+                    (Some(b_cell), Some(r_cell)) if Terrain::Energy.is_char(Some(b_cell)) && Terrain::Ground.is_char(Some(r_cell)) => r_cell,
+                    (Some(b_cell), Some(r_cell)) if Terrain::Ground.is_char(Some(b_cell)) && Terrain::Energy.is_char(Some(r_cell)) => b_cell,
+                    (Some(b_cell), Some(r_cell)) if Terrain::Ore.is_char(Some(b_cell)) && Terrain::Ground.is_char(Some(r_cell)) => r_cell,
+                    (Some(b_cell), Some(r_cell)) if Terrain::Ground.is_char(Some(b_cell)) && Terrain::Ore.is_char(Some(r_cell)) => b_cell,
                     (Some(b_cell), _) if !Terrain::Void.is_char(Some(b_cell)) => b_cell,
                     (_, Some(r_cell)) if !Terrain::Void.is_char(Some(r_cell)) => r_cell,
                     _ => Terrain::Void.to_char(),
                 };
-
                 new_map.set_cell(position, cell);
+            }
+        }
+
+        for x in 0..height {
+            for y in 0..width {
+                if let Some(cell) = new_map.get_cell(y, x) {
+                    let position: Position = Position {x, y};
+                    if (Terrain::Energy.is_char(Some(cell)) || Terrain::Ore.is_char(Some(cell))) && !self.resource_queue.contains(&position) && !self.detected_resources.contains(&position) {
+                        self.detected_resources.push(Position{x, y});
+                        self.resource_queue.push_back(Position {x, y});
+                    } else if Terrain::Science.is_char(Some(cell)) && !self.science_queue.contains(&position) && !self.detected_resources.contains(&position) {
+                        self.detected_resources.push(Position{x, y});
+                        self.science_queue.push_back(Position {x, y});
+                    }
+                }
             }
         }
 
         self.set_shared_map(new_map.clone());
         robot.set_known_map(new_map);
-
-        match robot.mission() {
-            Robot_type::Scout => {}
-            Robot_type::Harvester => {}
-            Robot_type::Scientist => {}
-        }
     }
 
     pub fn merge_maps(&mut self, robots: &mut Vec<Robot>) {
@@ -105,27 +148,19 @@ impl Base {
         }
     }
 
-    pub fn create_robot(&mut self, game: &mut Game) {
-        if self.energy >= 5 {
-            let scout_count = game.count_robots(Robot_type::Scout);
-            let harvester_count = game.count_robots(Robot_type::Harvester);
-            let scientist_count = game.count_robots(Robot_type::Scientist);
-
-            let robot_type = match (scout_count.cmp(&harvester_count), scout_count.cmp(&scientist_count), harvester_count.cmp(&scientist_count)) {
-                (Ordering::Less, Ordering::Less, _) => Robot_type::Scout,
-                (_, _, Ordering::Less) => Robot_type::Scientist,
-                _ => Robot_type::Harvester,
-            };
-
-            let new_robot: Robot = Robot::new(self.coordinates.x, self.coordinates.y, robot_type, game);
-            game.add_robot(new_robot);
-            self.energy -= 5;
-        }
-    }
-
     pub fn release_energy_and_merge(&mut self, robot: &mut Robot) {
-        print!("base: {}", robot.is_on_base(self));
-        if robot.is_on_base(self) {
+        if robot.is_on_base(self)
+        {
+            match robot.mission() {
+                Robot_type::Scout => {
+                    robot.set_void_terrains_discovered(0);
+                }
+                _ => {
+                    if robot.is_carrying() {
+                        robot.set_goal(None);
+                    }
+                }
+            }
             if robot.is_carrying() {
                 match *robot.resource() {
                     Terrain::Ore => {self.ores += 1}
@@ -135,15 +170,8 @@ impl Base {
                 }
                 robot.set_resource(Terrain::Void);
             }
-
-            match robot.mission() {
-                Robot_type::Scout => {
-                    robot.set_void_terrains_discovered(0);
-                }
-                _ => {}
-            }
+            self.merge_map(robot);
         }
-        self.merge_map(robot);
     }
 
     pub fn add_ores(&mut self) {

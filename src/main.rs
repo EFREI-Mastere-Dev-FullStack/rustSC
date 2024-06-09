@@ -9,6 +9,7 @@ mod terrain;
 mod pathfinding;
 mod robot_type;
 
+use std::io;
 use std::time::Duration;
 use std::thread::sleep;
 
@@ -20,7 +21,7 @@ use crate::robot_type::Robot_type;
 
 // debug main
 fn main() {
-    /*println!("Enter the map seed:");
+    println!("Enter the map seed:");
 
     let mut input = String::new();
     let mut seed: u32 = 0;
@@ -53,7 +54,18 @@ fn main() {
         width = input.trim().parse().expect("Invalid input");
     } else {
         width = 80;
-    }*/
+    }
+
+    println!("View all map (Y) or fog of war (N):");
+    input = String::new();
+    let mut fow: char = ' ';
+    io::stdin().read_line(&mut input).expect("Error while reading the input");
+
+    if !input.trim().is_empty() {
+        fow = input.trim().parse().expect("Invalid input");
+    } else {
+        fow = 'N';
+    }
 
     let seed: u32 = 1521335673;
     let width: usize = 80;
@@ -63,12 +75,10 @@ fn main() {
     let mut game: Game = Game::new(width, height, seed);
     let robot: Robot = Robot::new(width / 2, height / 2, Robot_type::Scout, &mut game);
     game.add_robot(robot);
-    let robot2: Robot = Robot::new(width / 2 + 1, height / 2, Robot_type::Scout, &mut game);
+    let robot2: Robot = Robot::new(width / 2 + 1, height / 2, Robot_type::Harvester, &mut game);
     game.add_robot(robot2);
-    let robot3: Robot = Robot::new(width / 2, height / 2 + 1, Robot_type::Scout, &mut game);
+    let robot3: Robot = Robot::new(width / 2, height / 2 + 1, Robot_type::Scientist, &mut game);
     game.add_robot(robot3);
-    let robot4: Robot = Robot::new(width / 2 + 1, height / 2 + 1, Robot_type::Scout, &mut game);
-    game.add_robot(robot4);
 
     game.update_known_maps();
     let mut paused: bool = false;
@@ -77,19 +87,17 @@ fn main() {
         if !paused {
             print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
             println!("Press 'p' + ENTER to pause or 'q' + ENTER to quit");
-            //game.print_map(); // print the all map
 
+            if (fow == 'N') {
+                game.print_map(); // print the all map
+            } else {
+                game.base.print_merged_map(&mut game.robots);
+            }
             game.move_robots();
-
             game.update_known_maps();
+            game.create_robot();
 
-            //game.base.merge_maps(&mut game.robots);
-
-            game.base.print_merged_map(&mut game.robots); // print the discovered map from all robots TEST ONLY
-
-            //game.robots()[0].print_map(seed); // print one robot self map
-
-            sleep(Duration::from_millis(200));
+            sleep(Duration::from_millis(20));
         }
 
         if event::poll(Duration::from_millis(200)).unwrap() {

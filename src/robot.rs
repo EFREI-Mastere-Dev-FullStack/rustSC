@@ -1,6 +1,5 @@
 extern crate rand;
 
-use rand::Rng;
 use rand::seq::SliceRandom;
 use crate::base::Base;
 use crate::map::Map;
@@ -25,6 +24,12 @@ impl Position {
     }
 }
 
+impl PartialEq for Position {
+    fn eq(&self, other: &Self) -> bool {
+        self.x == other.x && self.y == other.y
+    }
+}
+
 const MAX_VOID_TERRAINS: usize = 100;
 
 pub struct Robot {
@@ -33,6 +38,7 @@ pub struct Robot {
     resource: Terrain,
     void_terrains_discovered: usize,
     mission: Robot_type,
+    goal: Option<Position>
 }
 
 impl Robot {
@@ -42,7 +48,8 @@ impl Robot {
             known_map: Map::new(game.width(), game.height(), Terrain::Void),
             resource: Terrain::Void,
             void_terrains_discovered: 0,
-            mission: mission
+            mission: mission,
+            goal: None,
         }
     }
 
@@ -76,6 +83,10 @@ impl Robot {
         &mut self.known_map
     }
 
+    pub fn set_goal(&mut self, goal: Option<Position>) {
+        self.goal = goal;
+    }
+
     pub fn mission(&self) -> &Robot_type {
         &self.mission
     }
@@ -92,6 +103,10 @@ impl Robot {
         &self.resource
     }
 
+    pub fn goal(&self) -> &Option<Position> {
+        &self.goal
+    }
+
     pub fn set_resource(&mut self, terrain: Terrain) {
         self.resource = terrain;
     }
@@ -100,10 +115,9 @@ impl Robot {
         self.void_terrains_discovered = i;
     }
 
-    pub fn move_robot(&mut self, width: usize, height: usize, map: &mut Map, base: &mut Base) {
+    pub fn move_robot(&mut self, map: &mut Map, base: &mut Base) {
         match self.mission {
             Robot_type::Scout => {
-                println!("{0} void discovered", self.void_terrains_discovered);
                 if self.should_return_to_base() {
                     if let Some(path) = self.find_path(self.position.as_tuple(), (base.coordinates.y, base.coordinates.x)) {
                         if path.len() > 1 {
@@ -126,33 +140,62 @@ impl Robot {
                     }
                 }
             },
-            _ => {
-                let mut pos_is_ok: bool = false;
-                while !pos_is_ok {
-                    let mut rng = rand::thread_rng();
-                    let direction = rng.gen_range(0..4);
-                    match direction {
-                        0 if self.position.x > 0 && self.can_move(self.position.x - 1, self.position.y) => {
-                            self.position.x -= 1;
-                            pos_is_ok = true;
+            Robot_type::Harvester => {
+                if self.should_return_to_base() {
+                    if let Some(path) = self.find_path(self.position.as_tuple(), (base.coordinates.y, base.coordinates.x)) {
+                        if path.len() > 1 {
+                            let next_step = path[1];
+                            self.position.x = next_step.0;
+                            self.position.y = next_step.1;
+                            self.on_resource(map);
                         }
-                        1 if self.position.x < width - 1 && self.can_move(self.position.x + 1, self.position.y) => {
-                            self.position.x += 1;
-                            pos_is_ok = true;
-                        },
-                        2 if self.position.y > 0 && self.can_move(self.position.x, self.position.y - 1) => {
-                            self.position.y -= 1;
-                            pos_is_ok = true;
-                        },
-                        3 if self.position.y < height - 1 && self.can_move(self.position.x, self.position.y + 1) => {
-                            self.position.y += 1;
-                            pos_is_ok = true;
-                        },
-                        _ => {}
+                    }
+                } else {
+                    if !base.resource_queue().is_empty() && self.goal.is_none() {
+                        self.set_goal(base.pop_resource_queue());
+                    }
+                    if !self.goal().is_none() {
+                        if let Some(goal) = Some(self.goal) {
+                            if let Some(path) = self.find_path(self.position.as_tuple(), (goal.unwrap().y, goal.unwrap().x)) {
+                                if path.len() > 1 {
+                                    let next_step = path[1];
+                                    self.position.x = next_step.0;
+                                    self.position.y = next_step.1;
+                                    self.on_resource(map);
+                                }
+                            }
+                        }
                     }
                 }
-                self.on_resource(map);
             },
+            Robot_type::Scientist => {
+                if self.should_return_to_base() {
+                    if let Some(path) = self.find_path(self.position.as_tuple(), (base.coordinates.y, base.coordinates.x)) {
+                        if path.len() > 1 {
+                            let next_step = path[1];
+                            self.position.x = next_step.0;
+                            self.position.y = next_step.1;
+                            self.on_resource(map);
+                        }
+                    }
+                } else {
+                    if !base.science_queue().is_empty() && self.goal.is_none() {
+                        self.set_goal(base.pop_science_queue());
+                    }
+                    if let Some(goal) = Some(self.goal) {
+                        if !self.goal().is_none() {
+                            if let Some(path) = self.find_path(self.position.as_tuple(), (goal.unwrap().y, goal.unwrap().x)) {
+                                if path.len() > 1 {
+                                    let next_step = path[1];
+                                    self.position.x = next_step.0;
+                                    self.position.y = next_step.1;
+                                    self.on_resource(map);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
         base.release_energy_and_merge(self);
     }
@@ -166,6 +209,7 @@ impl Robot {
 
     fn on_resource(&mut self, map: &mut Map) {
         if !self.is_carrying()
+            && Robot_type::Scout.to_string() != self.mission().to_string()
             && (Terrain::Energy.is_char(self.known_map.get_cell(self.position().x, self.position().y))
             || Terrain::Ore.is_char(self.known_map.get_cell(self.position().x, self.position().y))
             || Terrain::Science.is_char(self.known_map.get_cell(self.position().x, self.position().y))) {
@@ -225,7 +269,7 @@ impl Robot {
             Robot_type::Scout => {
                 self.void_terrains_discovered >= MAX_VOID_TERRAINS
             },
-            _ => false,
+            _ => self.resource != Terrain::Void,
         }
     }
 
