@@ -5,6 +5,7 @@ use rand::Rng;
 use crate::map::Map;
 use crate::game::Game;
 use crate::terrain::Terrain;
+use crate::pathfinding;
 
 #[derive(Clone, Copy)]
 pub struct Position {
@@ -149,5 +150,9 @@ impl Robot {
                 }
             }
         }
+    }
+
+    pub fn find_path(&self, start: (usize, usize), goal: (usize, usize)) -> Option<Vec<(usize, usize)>> {
+        pathfinding::pathfind(self, start, goal)
     }
 }

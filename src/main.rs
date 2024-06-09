@@ -6,6 +6,7 @@ mod robot;
 mod map;
 mod base;
 mod terrain;
+mod pathfinding;
 
 use std::io;
 use std::time::Duration;
