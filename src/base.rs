@@ -41,7 +41,7 @@ impl Base {
             for (i, _) in robots.iter().enumerate() {
                 if y < robots.len() + 1 {
                     if y == i + 1 {
-                        print!("   | Position: (x: {}, y: {}), Resource: {}, On: {}", robots[i].position().x, robots[i].position().y, robots[i].resource().to_char(), &self.shared_map.get_cell(robots[i].position().x, robots[i].position().y).unwrap())
+                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {}, On: {}", robots[i].mission().to_string(), robots[i].position().x, robots[i].position().y, robots[i].resource().to_char(), &self.shared_map.get_cell(robots[i].position().x, robots[i].position().y).unwrap())
                     }
                 }
             }
