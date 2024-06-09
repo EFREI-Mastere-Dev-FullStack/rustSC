@@ -29,7 +29,7 @@ impl Position {
 const MAX_VOID_TERRAINS: usize = 50;
 
 pub struct Robot {
-    position: Position,
+    position: Position, // x = height, y = width
     pub(crate) known_map: Map,
     resource: Terrain,
     void_terrains_discovered: usize,
@@ -103,14 +103,14 @@ impl Robot {
         self.resource = terrain;
     }
 
-    pub fn move_robot(&mut self, width: usize, height: usize) {
+    pub fn move_robot(&mut self, width: usize, height: usize, map: &mut Map) {
         if let Some(goal) = self.find_nearest_void() {
             if let Some(path) = self.find_path(self.position.as_tuple(), goal) {
                 if path.len() > 1 {
                     let next_step = path[1];
                     self.position.x = next_step.0;
                     self.position.y = next_step.1;
-                    self.on_resource();
+                    self.on_resource(map);
                 }
             }
         }
@@ -123,19 +123,20 @@ impl Robot {
             && !Terrain::Void.is_char(self.known_map.get_cell(x, y))
     }
 
-    fn on_resource(&mut self) {
+    fn on_resource(&mut self, map: &mut Map) {
         if !self.is_carrying()
             && (Terrain::Energy.is_char(self.known_map.get_cell(self.position().x, self.position().y))
             || Terrain::Ore.is_char(self.known_map.get_cell(self.position().x, self.position().y))) {
-            self.take_resource();
+            self.take_resource(map);
         }
     }
 
-    fn take_resource(&mut self) {
-        if let Some(cell) = self.known_map.get_cell(self.position().y, self.position().x) {
+    fn take_resource(&mut self, map: &mut Map) {
+        if let Some(cell) = self.known_map.get_cell(self.position().x, self.position().y) {
             if !Some(cell).is_none() && !self.is_carrying() {
                 self.set_resource(Terrain::from_char(cell));
                 self.known_map.set_cell(Position {y: self.position().x, x: self.position().y}, Terrain::Ground.to_char());
+                map.set_cell(Position {y: self.position().x, x: self.position().y}, Terrain::Ground.to_char());
             }
         }
     }
