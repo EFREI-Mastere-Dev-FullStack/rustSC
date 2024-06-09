@@ -10,7 +10,7 @@ use crate::base::Base;
 use crate::robot_type::Robot_type;
 
 pub struct Game {
-    pub(crate) data: Map,
+    pub(crate) map: Map,
     pub(crate) robots: Vec<Robot>,
     pub(crate) base: Base,
     seed: u32
@@ -53,7 +53,7 @@ impl Game {
         map.set_cell(Position {x: center_y + 1, y: center_x}, '╚');
         map.set_cell(Position {x: center_y + 1, y: center_x + 1}, '╝');
 
-        Game {data: map, robots: Vec::new(), seed: seed, base: Base::new(width, height, center_y, center_x)}
+        Game { map: map, robots: Vec::new(), seed: seed, base: Base::new(width, height, center_y, center_x)}
     }
 
     pub fn add_robot(&mut self, robot: Robot) {
@@ -61,15 +61,15 @@ impl Game {
     }
 
     pub fn get_cell(&self, x: usize, y: usize) -> Option<char> {
-        self.data.get_cell(x, y)
+        self.map.get_cell(x, y)
     }
 
     pub fn width(&self) -> usize {
-        self.data.width()
+        self.map.width()
     }
 
     pub fn height(&self) -> usize {
-        self.data.height()
+        self.map.height()
     }
 
     pub fn robots(&self) -> &Vec<Robot> {
@@ -80,18 +80,18 @@ impl Game {
         let width = self.width();
         let height = self.height();
         for robot in &mut self.robots {
-            robot.move_robot(width, height);
+            robot.move_robot(width, height, &mut self.map);
         }
     }
 
     pub fn update_known_maps(&mut self) {
         for robot in &mut self.robots {
-            robot.update_known_map(&self.data);
+            robot.update_known_map(&self.map);
         }
     }
 
     pub fn print_map(&self) {
-        for (y, row) in self.data.data.iter().enumerate() {
+        for (y, row) in self.map.data.iter().enumerate() {
             for (x, col) in row.iter().enumerate() {
                 let mut is_robot = false;
                 for robot in &self.robots {

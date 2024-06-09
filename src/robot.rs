@@ -97,7 +97,7 @@ impl Robot {
         self.resource = terrain;
     }
 
-    pub fn move_robot(&mut self, width: usize, height: usize) {
+    pub fn move_robot(&mut self, width: usize, height: usize, map: &mut Map) {
         let mut pos_is_ok: bool = false;
         while !pos_is_ok {
             let mut rng = rand::thread_rng();
@@ -122,7 +122,7 @@ impl Robot {
                 _ => {}
             }
         }
-        self.on_resource();
+        self.on_resource(map);
     }
 
     fn can_move(&self, x: usize, y: usize) -> bool {
@@ -132,19 +132,20 @@ impl Robot {
             && !Terrain::Void.is_char(self.known_map.get_cell(x, y))
     }
 
-    fn on_resource(&mut self) {
+    fn on_resource(&mut self, map: &mut Map) {
         if !self.is_carrying()
             && (Terrain::Energy.is_char(self.known_map.get_cell(self.position().x, self.position().y))
             || Terrain::Ore.is_char(self.known_map.get_cell(self.position().x, self.position().y))) {
-            self.take_resource();
+            self.take_resource(map);
         }
     }
 
-    fn take_resource(&mut self) {
-        if let Some(cell) = self.known_map.get_cell(self.position().y, self.position().x) {
+    fn take_resource(&mut self, map: &mut Map) {
+        if let Some(cell) = self.known_map.get_cell(self.position().x, self.position().y) {
             if !Some(cell).is_none() && !self.is_carrying() {
                 self.set_resource(Terrain::from_char(cell));
                 self.known_map.set_cell(Position {y: self.position().x, x: self.position().y}, Terrain::Ground.to_char());
+                map.set_cell(Position {y: self.position().x, x: self.position().y}, Terrain::Ground.to_char());
             }
         }
     }
