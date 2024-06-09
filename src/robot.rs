@@ -154,7 +154,8 @@ impl Robot {
     fn on_resource(&mut self, map: &mut Map) {
         if !self.is_carrying()
             && (Terrain::Energy.is_char(self.known_map.get_cell(self.position().x, self.position().y))
-            || Terrain::Ore.is_char(self.known_map.get_cell(self.position().x, self.position().y))) {
+            || Terrain::Ore.is_char(self.known_map.get_cell(self.position().x, self.position().y))
+            || Terrain::Science.is_char(self.known_map.get_cell(self.position().x, self.position().y))) {
             self.take_resource(map);
         }
     }

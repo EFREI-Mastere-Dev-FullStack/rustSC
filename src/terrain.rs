@@ -5,6 +5,7 @@ pub enum Terrain {
     Energy,
     Ground,
     Robot,
+    Science,
     CarryingRobot,
     Void
 }
@@ -18,6 +19,7 @@ impl Terrain {
             Terrain::Ground => '.', // for debug then ' '
             Terrain::Energy => '♥',
             Terrain::Robot => '☻',
+            Terrain::Science => '▲',
             Terrain::CarryingRobot => '☺',
             Terrain::Void => ' ', // for debug then '.'
         }
@@ -31,6 +33,7 @@ impl Terrain {
             '.' => Terrain::Ground, // for debug then ' '
             '♥' => Terrain::Energy,
             '☻' => Terrain::Robot,
+            '▲' => Terrain::Science,
             '☺' => Terrain::CarryingRobot,
             _ => Terrain::Void
         }

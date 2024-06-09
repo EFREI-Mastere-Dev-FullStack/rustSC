@@ -7,13 +7,14 @@ use crate::terrain::Terrain;
 pub(crate) struct Base {
     pub(crate) ores: usize,
     pub(crate) energy: usize,
+    pub(crate) science: usize,
     shared_map: Map,
     pub(crate) coordinates: Position
 }
 
 impl Base {
     pub fn new(width: usize, height: usize, center_x: usize, center_y: usize) -> Self {
-        Base {ores: 0, energy: 0, shared_map: Map::new(width, height, Terrain::Void), coordinates: Position {x: center_x, y: center_y}}
+        Base {ores: 0, energy: 0, science: 0, shared_map: Map::new(width, height, Terrain::Void), coordinates: Position {x: center_x, y: center_y}}
     }
 
     pub fn print_merged_map(&mut self, robots: &Vec<Robot>) {
@@ -34,7 +35,7 @@ impl Base {
             }
 
             if y == 0 {
-                print!("   | Energy: {}, Ore: {}", self.energy, self.ores);
+                print!("   | Energy: {}, Ore: {}, Science: {}", self.energy, self.ores, self.science);
             }
             for (i, _) in robots.iter().enumerate() {
                 if y < robots.len() + 1 {
@@ -104,10 +105,11 @@ impl Base {
     pub fn release_energy_and_merge(&mut self, robot: &mut Robot) {
         if robot.is_on_base(self) {
             if robot.is_carrying() {
-                if *robot.resource() == Terrain::Energy {
-                    self.energy += 1;
-                } else {
-                    self.ores += 1;
+                match *robot.resource() {
+                    Terrain::Ore => {self.ores += 1}
+                    Terrain::Energy => {self.energy += 1}
+                    Terrain::Science => {self.science += 1}
+                    _ => {}
                 }
                 robot.set_resource(Terrain::Void);
             }
@@ -121,5 +123,9 @@ impl Base {
 
     pub fn add_energy(&mut self) {
         self.energy += 1;
+    }
+
+    pub fn add_science(&mut self) {
+        self.science += 1;
     }
 }
