@@ -5,6 +5,7 @@ pub enum Terrain {
     Energy,
     Ground,
     Robot,
+    Science,
     CarryingRobot,
     Base,
     Void
@@ -19,6 +20,7 @@ impl Terrain {
             Terrain::Ground => '.', // for debug then ' '
             Terrain::Energy => '♥',
             Terrain::Robot => '☻',
+            Terrain::Science => '▲',
             Terrain::CarryingRobot => '☺',
             Terrain::Base => '╔',
             Terrain::Void => ' ' // for debug then '.'
@@ -33,6 +35,7 @@ impl Terrain {
             '.' => Terrain::Ground, // for debug then ' '
             '♥' => Terrain::Energy,
             '☻' => Terrain::Robot,
+            '▲' => Terrain::Science,
             '☺' => Terrain::CarryingRobot,
             '╔' => Terrain::Base,
             _ => Terrain::Void
@@ -44,5 +47,11 @@ impl Terrain {
             return true;
         }
         false
+    }
+}
+
+impl PartialEq for Terrain {
+    fn eq(&self, other: &Self) -> bool {
+        self.to_char() == other.to_char()
     }
 }

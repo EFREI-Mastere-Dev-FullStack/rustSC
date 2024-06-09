@@ -36,12 +36,6 @@ pub struct Robot {
     mission: Robot_type,
 }
 
-impl PartialEq for Terrain {
-    fn eq(&self, other: &Self) -> bool {
-        self.to_char() == other.to_char()
-    }
-}
-
 impl Robot {
     pub fn new(x: usize, y: usize, mission: Robot_type, game: &mut Game) -> Robot {
         Robot {
@@ -131,7 +125,7 @@ impl Robot {
             },
             _ => {},
         }
-    }
+    }*/
 
     fn can_move(&self, x: usize, y: usize) -> bool {
         !Terrain::Wall.is_char(self.known_map.get_cell(x, y))
@@ -143,7 +137,8 @@ impl Robot {
     fn on_resource(&mut self, map: &mut Map) {
         if !self.is_carrying()
             && (Terrain::Energy.is_char(self.known_map.get_cell(self.position().x, self.position().y))
-            || Terrain::Ore.is_char(self.known_map.get_cell(self.position().x, self.position().y))) {
+            || Terrain::Ore.is_char(self.known_map.get_cell(self.position().x, self.position().y))
+            || Terrain::Science.is_char(self.known_map.get_cell(self.position().x, self.position().y))) {
             self.take_resource(map);
         }
     }

@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use crate::game::Game;
 use crate::map::Map;
 use crate::robot::{Position, Robot};
@@ -5,15 +6,16 @@ use crate::robot_type::Robot_type;
 use crate::terrain::Terrain;
 
 pub(crate) struct Base {
-    ores: usize,
-    energy: usize,
+    pub(crate) ores: usize,
+    pub(crate) energy: usize,
+    pub(crate) science: usize,
     shared_map: Map,
     pub(crate) coordinates: Position
 }
 
 impl Base {
     pub fn new(width: usize, height: usize, center_x: usize, center_y: usize) -> Self {
-        Base {ores: 0, energy: 0, shared_map: Map::new(width, height, Terrain::Void), coordinates: Position {x: center_x, y: center_y}}
+        Base {ores: 0, energy: 0, science: 0, shared_map: Map::new(width, height, Terrain::Void), coordinates: Position {x: center_x, y: center_y}}
     }
 
     pub fn print_merged_map(&mut self, robots: &Vec<Robot>) {
@@ -33,10 +35,13 @@ impl Base {
                 }
             }
 
+            if y == 0 {
+                print!("   | Energy: {}, Ore: {}, Science: {}", self.energy, self.ores, self.science);
+            }
             for (i, _) in robots.iter().enumerate() {
-                if y < robots.len() {
-                    if y == i {
-                        print!("   | x: {}, y: {}, resource: {}, on: {}", robots[i].position().x, robots[i].position().y, robots[i].resource().to_char(), &self.shared_map.get_cell(robots[i].position().x, robots[i].position().y).unwrap())
+                if y < robots.len() + 1 {
+                    if y == i + 1 {
+                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {}, On: {}", robots[i].mission().to_string(), robots[i].position().x, robots[i].position().y, robots[i].resource().to_char(), &self.shared_map.get_cell(robots[i].position().x, robots[i].position().y).unwrap())
                     }
                 }
             }
@@ -85,13 +90,16 @@ impl Base {
 
     pub fn create_robot(&mut self, game: &mut Game) {
         if self.energy >= 5 {
-            let robot_type: Robot_type = (
-                if game.count_robots(Robot_type::Scout) > game.count_robots(Robot_type::Harvester) {
-                    Robot_type::Scout
-                } else {
-                    Robot_type::Harvester
-                }
-            );
+            let scout_count = game.count_robots(Robot_type::Scout);
+            let harvester_count = game.count_robots(Robot_type::Harvester);
+            let scientist_count = game.count_robots(Robot_type::Scientist);
+
+            let robot_type = match (scout_count.cmp(&harvester_count), scout_count.cmp(&scientist_count), harvester_count.cmp(&scientist_count)) {
+                (Ordering::Less, Ordering::Less, _) => Robot_type::Scout,
+                (_, _, Ordering::Less) => Robot_type::Scientist,
+                _ => Robot_type::Harvester,
+            };
+
             let new_robot: Robot = Robot::new(self.coordinates.x, self.coordinates.y, robot_type, game);
             game.add_robot(new_robot);
             self.energy -= 5;
@@ -101,10 +109,11 @@ impl Base {
     pub fn release_energy_and_merge(&mut self, robot: &mut Robot) {
         if robot.is_on_base(self) {
             if robot.is_carrying() {
-                if *robot.resource() == Terrain::Energy {
-                    self.energy += 1;
-                } else {
-                    self.ores += 1;
+                match *robot.resource() {
+                    Terrain::Ore => {self.ores += 1}
+                    Terrain::Energy => {self.energy += 1}
+                    Terrain::Science => {self.science += 1}
+                    _ => {}
                 }
                 robot.set_resource(Terrain::Void);
             }
@@ -118,5 +127,9 @@ impl Base {
 
     pub fn add_energy(&mut self) {
         self.energy += 1;
+    }
+
+    pub fn add_science(&mut self) {
+        self.science += 1;
     }
 }
