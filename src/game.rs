@@ -96,7 +96,7 @@ impl Game {
                 let mut is_robot = false;
                 for robot in &self.robots {
                     if (x, y) == robot.position().as_tuple() {
-                        let displayed_robot = if robot.is_carrying() { Terrain::Robot.to_char() } else { Terrain::CarryingRobot.to_char()};
+                        let displayed_robot = if !robot.is_carrying() { Terrain::Robot.to_char() } else { Terrain::CarryingRobot.to_char() };
                         print!("{}", displayed_robot);
                         is_robot = true;
                         break;
@@ -104,6 +104,13 @@ impl Game {
                 }
                 if !is_robot {
                     print!("{}", col);
+                }
+            }
+            for (i, _) in self.robots.iter().enumerate() {
+                if y < self.robots.len() {
+                    if y == i {
+                        print!("   | x: {}, y: {}, resource: {}, on: {}", &self.robots[i].position().x, &self.robots[i].position().y, &self.robots[i].resource().to_char(), &self.get_cell(self.robots[i].position().x, self.robots[i].position().y).unwrap())
+                    }
                 }
             }
             println!();

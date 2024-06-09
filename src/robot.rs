@@ -25,7 +25,7 @@ impl Position {
 }
 
 pub struct Robot {
-    position: Position,
+    position: Position, // x = height, y = width
     pub(crate) known_map: Map,
     resource: Terrain,
     mission: Robot_type,

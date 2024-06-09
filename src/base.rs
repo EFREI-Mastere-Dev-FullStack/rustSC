@@ -22,13 +22,22 @@ impl Base {
                 let mut is_robot = false;
                 for robot in robots {
                     if (x, y) == robot.position().as_tuple() {
-                        print!("{}", Terrain::Robot.to_char());
+                        let displayed_robot = if !robot.is_carrying() { Terrain::Robot.to_char() } else { Terrain::CarryingRobot.to_char() };
+                        print!("{}", displayed_robot);
                         is_robot = true;
                         break;
                     }
                 }
                 if !is_robot {
                     print!("{}", col);
+                }
+            }
+
+            for (i, _) in robots.iter().enumerate() {
+                if y < robots.len() {
+                    if y == i {
+                        print!("   | x: {}, y: {}, resource: {}, on: {}", robots[i].position().x, robots[i].position().y, robots[i].resource().to_char(), &self.shared_map.get_cell(robots[i].position().x, robots[i].position().y).unwrap())
+                    }
                 }
             }
             println!();

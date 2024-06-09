@@ -8,11 +8,11 @@ mod base;
 mod terrain;
 mod robot_type;
 
-use std::io;
 use std::time::Duration;
 use std::thread::sleep;
 
 use rand::{Rng, thread_rng};
+use crossterm::event::{self, Event, KeyCode};
 use game::Game;
 use robot::Robot;
 use crate::robot_type::Robot_type;
@@ -70,22 +70,46 @@ fn main() {
     game.add_robot(robot4);
 
     game.update_known_maps();
-
+    let mut paused: bool = false;
+    let mut quit: bool = false;
     loop {
-        print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+        if !paused {
+            print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+            println!("Press 'p' + ENTER to pause or 'q' + ENTER to quit");
+            game.print_map(); // print the all map
 
-        //game.print_map(); // print the all map
+            game.move_robots();
 
-        game.move_robots();
+            game.update_known_maps();
 
-        game.update_known_maps();
+            game.base.merge_maps(&mut game.robots);
 
-        game.base.merge_maps(&mut game.robots);
+            //game.base.print_merged_map(&mut game.robots); // print the discovered map from all robots TEST ONLY
 
-        game.base.print_merged_map(&mut game.robots); // print the discovered map from all robots TEST ONLY
+            //game.robots()[0].print_map(seed); // print one robot self map
 
-        //game.robots()[0].print_map(seed); // print one robot self map
+            sleep(Duration::from_millis(200));
+        }
 
-        sleep(Duration::from_millis(200));
+        if event::poll(Duration::from_millis(200)).unwrap() {
+            if let Event::Key(key_event) = event::read().unwrap() {
+                match key_event.code {
+                    KeyCode::Char('p') => {
+                        paused = !paused;
+                        if paused {
+                            println!("--- PAUSED ---\nPress 'p' + ENTER to pause or 'q' + ENTER to quit");
+                        }
+                    }
+                    KeyCode::Char('q') => {
+                        quit = true;
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        if quit {
+           break;
+        }
     }
 }

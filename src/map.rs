@@ -1,4 +1,4 @@
-use crate::robot::Position;
+use crate::robot::{Position};
 use crate::terrain::Terrain;
 
 #[derive(Clone)]
