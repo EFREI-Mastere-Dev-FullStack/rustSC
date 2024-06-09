@@ -2,6 +2,7 @@ extern crate rand;
 
 use std::cmp::PartialEq;
 use rand::Rng;
+use rand::seq::SliceRandom;
 use crate::base::Base;
 use crate::map::Map;
 use crate::game::Game;
@@ -25,10 +26,13 @@ impl Position {
     }
 }
 
+const MAX_VOID_TERRAINS: usize = 50;
+
 pub struct Robot {
     position: Position,
     pub(crate) known_map: Map,
     resource: Terrain,
+    void_terrains_discovered: usize,
     mission: Robot_type,
 }
 
@@ -44,6 +48,7 @@ impl Robot {
             position: Position::new(x, y),
             known_map: Map::new(game.width(), game.height(), Terrain::Void),
             resource: Terrain::Void,
+            void_terrains_discovered: 0,
             mission: mission
         }
     }
@@ -99,31 +104,16 @@ impl Robot {
     }
 
     pub fn move_robot(&mut self, width: usize, height: usize) {
-        let mut pos_is_ok: bool = false;
-        while !pos_is_ok {
-            let mut rng = rand::thread_rng();
-            let direction = rng.gen_range(0..4);
-            match direction {
-                0 if self.position.x > 0 && self.can_move(self.position.x - 1, self.position.y) => {
-                    self.position.x -= 1;
-                    pos_is_ok = true;
+        if let Some(goal) = self.find_nearest_void() {
+            if let Some(path) = self.find_path(self.position.as_tuple(), goal) {
+                if path.len() > 1 {
+                    let next_step = path[1];
+                    self.position.x = next_step.0;
+                    self.position.y = next_step.1;
+                    self.on_resource();
                 }
-                1 if self.position.x < width - 1 && self.can_move(self.position.x + 1, self.position.y) => {
-                    self.position.x += 1;
-                    pos_is_ok = true;
-                },
-                2 if self.position.y > 0 && self.can_move(self.position.x, self.position.y - 1) => {
-                    self.position.y -= 1;
-                    pos_is_ok = true;
-                },
-                3 if self.position.y < height - 1 && self.can_move(self.position.x, self.position.y + 1) => {
-                    self.position.y += 1;
-                    pos_is_ok = true;
-                },
-                _ => {}
             }
         }
-        self.on_resource();
     }
 
     fn can_move(&self, x: usize, y: usize) -> bool {
@@ -175,6 +165,7 @@ impl Robot {
                 let cell_value = map.get_cell(x as usize, y as usize);
                 if !cell_value.is_none() {
                     self.set_cell(Position { x: y as usize, y: x as usize }, cell_value.unwrap());
+                    self.void_terrains_discovered += 1;
                 }
             }
         }
@@ -182,5 +173,37 @@ impl Robot {
 
     pub fn find_path(&self, start: (usize, usize), goal: (usize, usize)) -> Option<Vec<(usize, usize)>> {
         pathfinding::pathfind(self, start, goal)
+    }
+
+    pub fn should_return_to_base(&self) -> bool {
+        self.mission == Robot_type::Scout && self.void_terrains_discovered >= MAX_VOID_TERRAINS
+    }
+
+    fn find_nearest_void(&self) -> Option<(usize, usize)> {
+        let mut min_distance = usize::MAX;
+        let mut nearest_voids = Vec::new();
+        let (start_x, start_y) = self.position.as_tuple();
+
+        for y in 0..self.known_map.height() {
+            for x in 0..self.known_map.width() {
+                if self.known_map.get_cell(x, y) == Some(Terrain::Void.to_char()) {
+                    let distance = ((start_x as isize - x as isize).abs() + (start_y as isize - y as isize).abs()) as usize;
+                    if distance < min_distance {
+                        min_distance = distance;
+                        nearest_voids.clear();
+                        nearest_voids.push((x, y));
+                    } else if distance == min_distance {
+                        nearest_voids.push((x, y));
+                    }
+                }
+            }
+        }
+
+        if !nearest_voids.is_empty() {
+            let mut rng = rand::thread_rng();
+            return nearest_voids.choose(&mut rng).copied();
+        }
+
+        None
     }
 }
