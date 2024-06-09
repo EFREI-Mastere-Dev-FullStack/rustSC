@@ -5,8 +5,8 @@ use crate::robot_type::Robot_type;
 use crate::terrain::Terrain;
 
 pub(crate) struct Base {
-    ores: usize,
-    energy: usize,
+    pub(crate) ores: usize,
+    pub(crate) energy: usize,
     shared_map: Map,
     pub(crate) coordinates: Position
 }
@@ -33,10 +33,13 @@ impl Base {
                 }
             }
 
+            if y == 0 {
+                print!("   | Energy: {}, Ore: {}", self.energy, self.ores);
+            }
             for (i, _) in robots.iter().enumerate() {
-                if y < robots.len() {
-                    if y == i {
-                        print!("   | x: {}, y: {}, resource: {}, on: {}", robots[i].position().x, robots[i].position().y, robots[i].resource().to_char(), &self.shared_map.get_cell(robots[i].position().x, robots[i].position().y).unwrap())
+                if y < robots.len() + 1 {
+                    if y == i + 1 {
+                        print!("   | Position: (x: {}, y: {}), Resource: {}, On: {}", robots[i].position().x, robots[i].position().y, robots[i].resource().to_char(), &self.shared_map.get_cell(robots[i].position().x, robots[i].position().y).unwrap())
                     }
                 }
             }

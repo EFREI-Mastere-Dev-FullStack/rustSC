@@ -106,10 +106,14 @@ impl Game {
                     print!("{}", col);
                 }
             }
+
+            if y == 0 {
+                print!("   | Energy: {}, Ore: {}", self.base.energy, self.base.ores);
+            }
             for (i, _) in self.robots.iter().enumerate() {
-                if y < self.robots.len() {
-                    if y == i {
-                        print!("   | x: {}, y: {}, resource: {}, on: {}", &self.robots[i].position().x, &self.robots[i].position().y, &self.robots[i].resource().to_char(), &self.get_cell(self.robots[i].position().x, self.robots[i].position().y).unwrap())
+                if y < self.robots.len() + 1 {
+                    if y == i + 1 {
+                        print!("   | Position: (x: {}, y: {}), Resource: {}, On: {}", &self.robots[i].position().x, &self.robots[i].position().y, &self.robots[i].resource().to_char(), &self.get_cell(self.robots[i].position().x, self.robots[i].position().y).unwrap())
                     }
                 }
             }
