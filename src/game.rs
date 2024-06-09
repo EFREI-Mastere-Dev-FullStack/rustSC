@@ -1,4 +1,3 @@
-use std::cmp::PartialEq;
 use noise::{NoiseFn, Perlin};
 use crate::utils::{get_char};
 use robot::Robot;
@@ -14,12 +13,6 @@ pub struct Game {
     pub(crate) robots: Vec<Robot>,
     pub(crate) base: Base,
     seed: u32
-}
-
-impl PartialEq for Robot_type {
-    fn eq(&self, other: &Self) -> bool {
-        self == other
-    }
 }
 
 impl Game {

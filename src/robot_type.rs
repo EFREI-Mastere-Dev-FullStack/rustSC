@@ -19,3 +19,9 @@ impl Robot_type {
         }
     }
 }
+
+impl PartialEq for Robot_type {
+    fn eq(&self, other: &Self) -> bool {
+        self == other
+    }
+}

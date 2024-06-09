@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use std::collections::VecDeque;
 use crate::game::Game;
 use crate::map::Map;
 use crate::robot::{Position, Robot};
@@ -10,12 +11,22 @@ pub(crate) struct Base {
     pub(crate) energy: usize,
     pub(crate) science: usize,
     shared_map: Map,
-    pub(crate) coordinates: Position
+    pub(crate) coordinates: Position,
+    science_queue: VecDeque<Position>,
+    resource_queue: VecDeque<Position>
 }
 
 impl Base {
     pub fn new(width: usize, height: usize, center_x: usize, center_y: usize) -> Self {
-        Base {ores: 0, energy: 0, science: 0, shared_map: Map::new(width, height, Terrain::Void), coordinates: Position {x: center_x, y: center_y}}
+        Base {
+            ores: 0,
+            energy: 0,
+            science: 0,
+            shared_map: Map::new(width, height, Terrain::Void),
+            coordinates: Position {x: center_x, y: center_y},
+            science_queue: VecDeque::new(),
+            resource_queue: VecDeque::new()
+        }
     }
 
     pub fn print_merged_map(&mut self, robots: &Vec<Robot>) {
@@ -80,6 +91,12 @@ impl Base {
 
         self.set_shared_map(new_map.clone());
         robot.set_known_map(new_map);
+
+        match robot.mission() {
+            Robot_type::Scout => {}
+            Robot_type::Harvester => {}
+            Robot_type::Scientist => {}
+        }
     }
 
     pub fn merge_maps(&mut self, robots: &mut Vec<Robot>) {
