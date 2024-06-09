@@ -1,3 +1,4 @@
+use std::cmp::PartialEq;
 use noise::{NoiseFn, Perlin};
 use crate::utils::{get_char};
 use robot::Robot;
@@ -6,12 +7,19 @@ use crate::robot;
 use crate::robot::Position;
 use crate::terrain::Terrain;
 use crate::base::Base;
+use crate::robot_type::Robot_type;
 
 pub struct Game {
     pub(crate) data: Map,
     pub(crate) robots: Vec<Robot>,
     pub(crate) base: Base,
     seed: u32
+}
+
+impl PartialEq for Robot_type {
+    fn eq(&self, other: &Self) -> bool {
+        self == other
+    }
 }
 
 impl Game {
@@ -45,7 +53,7 @@ impl Game {
         map.set_cell(Position {x: center_y + 1, y: center_x}, '╚');
         map.set_cell(Position {x: center_y + 1, y: center_x + 1}, '╝');
 
-        Game {data: map, robots: Vec::new(), seed: seed, base: Base::new(width, height)}
+        Game {data: map, robots: Vec::new(), seed: seed, base: Base::new(width, height, center_y, center_x)}
     }
 
     pub fn add_robot(&mut self, robot: Robot) {
@@ -101,6 +109,16 @@ impl Game {
             println!();
         }
         print!("{}", self.seed);
+    }
+
+    pub fn count_robots(&self, robot_type: Robot_type) -> usize {
+        let mut count:usize = 0;
+        for robot in self.robots {
+            if robot.mission() == robot_type {
+                count +=1;
+            }
+        }
+        count
     }
 }
 

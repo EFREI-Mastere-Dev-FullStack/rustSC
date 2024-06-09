@@ -1,7 +1,6 @@
 extern crate rand;
 
 use std::cmp::PartialEq;
-use std::ops::Deref;
 use rand::Rng;
 use crate::map::Map;
 use crate::game::Game;
@@ -77,8 +76,8 @@ impl Robot {
         &mut self.known_map
     }
 
-    pub fn mission(&mut self) -> &mut Robot_type {
-        &mut self.mission
+    pub fn mission(self) -> Robot_type {
+        self.mission
     }
 
     pub fn set_mission(&mut self, mission: Robot_type) {

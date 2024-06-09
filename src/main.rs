@@ -74,18 +74,17 @@ fn main() {
     loop {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
 
-        //game.print_map();
-        //game.robots()[0].print_map(seed);
-        game.move_robots();
-        game.update_known_maps();
-        game.base.merge_map(&mut game.robots[0]);
-        //game.base.print_merged_map(&mut game.robots);
-        game.base.merge_map(&mut game.robots[1]);
-        game.base.merge_map(&mut game.robots[2]);
-        game.base.merge_map(&mut game.robots[3]);
+        //game.print_map(); // print the all map
 
-        game.base.print_merged_map(&mut game.robots);
-        //game.robots()[0].print_map(seed);
+        game.move_robots();
+
+        game.update_known_maps();
+
+        game.base.merge_maps(&mut game.robots);
+
+        game.base.print_merged_map(&mut game.robots); // print the discovered map from all robots TEST ONLY
+
+        //game.robots()[0].print_map(seed); // print one robot self map
 
         sleep(Duration::from_millis(200));
     }
