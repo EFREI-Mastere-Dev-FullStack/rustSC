@@ -2,8 +2,10 @@ extern crate rand;
 
 use std::cmp::PartialEq;
 use rand::Rng;
+use crate::base::Base;
 use crate::map::Map;
 use crate::game::Game;
+use crate::robot_type::Robot_type;
 use crate::terrain::Terrain;
 use crate::pathfinding;
 
@@ -27,6 +29,7 @@ pub struct Robot {
     position: Position,
     pub(crate) known_map: Map,
     resource: Terrain,
+    mission: Robot_type,
 }
 
 impl PartialEq for Terrain {
@@ -36,11 +39,12 @@ impl PartialEq for Terrain {
 }
 
 impl Robot {
-    pub fn new(x: usize, y: usize, game: &mut Game) -> Robot {
+    pub fn new(x: usize, y: usize, mission: Robot_type, game: &mut Game) -> Robot {
         Robot {
             position: Position::new(x, y),
             known_map: Map::new(game.width(), game.height(), Terrain::Void),
             resource: Terrain::Void,
+            mission: mission
         }
     }
 
@@ -74,8 +78,24 @@ impl Robot {
         &mut self.known_map
     }
 
+    pub fn mission(&self) -> &Robot_type {
+        &self.mission
+    }
+
+    pub fn set_mission(&mut self, mission: Robot_type) {
+        self.mission = mission;
+    }
+
     pub fn is_carrying(&self) -> bool {
         !(self.resource == Terrain::Void)
+    }
+
+    pub fn resource(&self) -> &Terrain {
+        &self.resource
+    }
+
+    pub fn set_resource(&mut self, terrain: Terrain) {
+        self.resource = terrain;
     }
 
     pub fn move_robot(&mut self, width: usize, height: usize) {
@@ -124,10 +144,18 @@ impl Robot {
     fn take_resource(&mut self) {
         if let Some(cell) = self.known_map.get_cell(self.position().y, self.position().x) {
             if !Some(cell).is_none() && !self.is_carrying() {
-                self.resource = Terrain::from_char(cell);
+                self.set_resource(Terrain::from_char(cell));
                 self.known_map.set_cell(Position {y: self.position().x, x: self.position().y}, Terrain::Ground.to_char());
             }
         }
+    }
+
+    pub(crate) fn is_on_base(&self, base: &mut Base) -> bool {
+        if (self.position.x == base.coordinates.x || self.position.x == base.coordinates.x + 1)
+            && (self.position.y == base.coordinates.y || self.position.y == base.coordinates.y + 1) {
+            return true;
+        }
+        false
     }
 
     pub fn set_cell(&mut self, position: Position, val: char) {

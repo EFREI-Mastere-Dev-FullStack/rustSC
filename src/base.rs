@@ -1,16 +1,19 @@
+use crate::game::Game;
 use crate::map::Map;
 use crate::robot::{Position, Robot};
+use crate::robot_type::Robot_type;
 use crate::terrain::Terrain;
 
 pub(crate) struct Base {
     ores: usize,
     energy: usize,
-    shared_map: Map
+    shared_map: Map,
+    pub(crate) coordinates: Position
 }
 
 impl Base {
-    pub fn new(width: usize, height: usize) -> Self {
-        Base {ores: 0, energy: 0, shared_map: Map::new(width, height, Terrain::Void)}
+    pub fn new(width: usize, height: usize, center_x: usize, center_y: usize) -> Self {
+        Base {ores: 0, energy: 0, shared_map: Map::new(width, height, Terrain::Void), coordinates: Position {x: center_x, y: center_y}}
     }
 
     pub fn print_merged_map(&mut self, robots: &Vec<Robot>) {
@@ -65,6 +68,39 @@ impl Base {
         robot.set_known_map(new_map);
     }
 
+    pub fn merge_maps(&mut self, robots: &mut Vec<Robot>) {
+        for robot in robots {
+            self.merge_map(robot);
+        }
+    }
+
+    pub fn create_robot(&mut self, game: &mut Game) {
+        if self.energy >= 5 {
+            let robot_type: Robot_type = (
+                if game.count_robots(Robot_type::Scout) > game.count_robots(Robot_type::Harvester) {
+                    Robot_type::Scout
+                } else {
+                    Robot_type::Harvester
+                }
+            );
+            let new_robot: Robot = Robot::new(self.coordinates.x, self.coordinates.y, robot_type, game);
+            game.add_robot(new_robot);
+        }
+    }
+
+    pub fn release_energy_and_merge(&mut self, robot: &mut Robot) {
+        if robot.is_on_base(self) {
+            if robot.is_carrying() {
+                if *robot.resource() == Terrain::Energy {
+                    self.energy += 1;
+                } else {
+                    self.ores += 1;
+                }
+                robot.set_resource(Terrain::Void);
+            }
+        }
+        self.merge_map(robot);
+    }
 
     pub fn add_ores(&mut self) {
         self.ores += 1;

@@ -7,6 +7,7 @@ mod map;
 mod base;
 mod terrain;
 mod pathfinding;
+mod robot_type;
 
 use std::io;
 use std::time::Duration;
@@ -15,6 +16,7 @@ use std::thread::sleep;
 use rand::{Rng, thread_rng};
 use game::Game;
 use robot::Robot;
+use crate::robot_type::Robot_type;
 
 // debug main
 fn main() {
@@ -54,18 +56,18 @@ fn main() {
     }*/
 
     let seed: u32 = 1521335673;
-    let width = 80;
-    let height = 40;
+    let width: usize = 80;
+    let height: usize = 40;
 
     println!("Generating map with seed: {}", seed);
     let mut game: Game = Game::new(width, height, seed);
-    let robot: Robot = Robot::new(width / 2, height / 2, &mut game);
+    let robot: Robot = Robot::new(width / 2, height / 2, Robot_type::Scout, &mut game);
     game.add_robot(robot);
-    let robot2: Robot = Robot::new(width / 2 +1, height / 2, &mut game);
+    let robot2: Robot = Robot::new(width / 2 +1, height / 2, Robot_type::Scout, &mut game);
     game.add_robot(robot2);
-    let robot3: Robot = Robot::new(width / 2, height / 2+1, &mut game);
+    let robot3: Robot = Robot::new(width / 2, height / 2+1, Robot_type::Scout, &mut game);
     game.add_robot(robot3);
-    let robot4: Robot = Robot::new(width / 2+1, height / 2+1, &mut game);
+    let robot4: Robot = Robot::new(width / 2+1, height / 2+1, Robot_type::Scout, &mut game);
     game.add_robot(robot4);
 
     game.update_known_maps();
@@ -73,18 +75,17 @@ fn main() {
     loop {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
 
-        //game.print_map();
-        //game.robots()[0].print_map(seed);
-        game.move_robots();
-        game.update_known_maps();
-        game.base.merge_map(&mut game.robots[0]);
-        //game.base.print_merged_map(&mut game.robots);
-        game.base.merge_map(&mut game.robots[1]);
-        game.base.merge_map(&mut game.robots[2]);
-        game.base.merge_map(&mut game.robots[3]);
+        //game.print_map(); // print the all map
 
-        game.base.print_merged_map(&mut game.robots);
-        //game.robots()[0].print_map(seed);
+        game.move_robots();
+
+        game.update_known_maps();
+
+        game.base.merge_maps(&mut game.robots);
+
+        game.base.print_merged_map(&mut game.robots); // print the discovered map from all robots TEST ONLY
+
+        //game.robots()[0].print_map(seed); // print one robot self map
 
         sleep(Duration::from_millis(200));
     }
