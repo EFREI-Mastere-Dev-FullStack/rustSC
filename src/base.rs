@@ -52,15 +52,11 @@ impl Base {
             for (i, _) in robots.iter().enumerate() {
                 if y < robots.len() + 1 {
                     if y == i + 1 {
-                        let goal_cell = if robots[i].goal().is_none() {' '} else {self.shared_map.get_cell(robots[i].goal().unwrap().x, robots[i].goal().unwrap().y).unwrap()};
-                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {}, Goal: {} in (x: {}, y: {})",
+                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {})",
                                robots[i].mission().to_string(),
                                robots[i].position().x,
                                robots[i].position().y,
-                               robots[i].resource().to_char(),
-                               goal_cell,
-                               robots[i].goal().unwrap_or_else(|| Position{x:0, y:0}).y,
-                               robots[i].goal().unwrap_or_else(|| Position{x:0, y:0}).x
+                               robots[i].resource().to_char()
                         )
                     }
                 }

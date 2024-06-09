@@ -106,15 +106,11 @@ impl Game {
             for (i, _) in self.robots.iter().enumerate() {
                 if y < self.robots.len() + 1 {
                     if y == i + 1 {
-                        let goal_cell = if &self.robots[i].goal().is_none() {' '} else {self.map.get_cell(self.robots[i].goal().unwrap().x, self.robots[i].goal().unwrap().y).unwrap()};
-                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {}, Goal: {} in (x: {}, y: {})",
+                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {})",
                                &self.robots[i].mission().to_string(),
                                &self.robots[i].position().x,
                                &self.robots[i].position().y,
-                               &self.robots[i].resource().to_char(),
-                               goal_cell,
-                               &self.robots[i].goal().unwrap_or_else(|| Position{x:0, y:0}).y,
-                               &self.robots[i].goal().unwrap_or_else(|| Position{x:0, y:0}).x
+                               &self.robots[i].resource().to_char()
                         )
                     }
                 }
