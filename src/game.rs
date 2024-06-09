@@ -111,10 +111,10 @@ impl Game {
         print!("{}", self.seed);
     }
 
-    pub fn count_robots(&self, robot_type: Robot_type) -> usize {
+    pub fn count_robots(&mut self, robot_type: Robot_type) -> usize {
         let mut count:usize = 0;
-        for robot in self.robots {
-            if robot.mission() == robot_type {
+        for robot in &mut self.robots {
+            if *robot.mission() == robot_type {
                 count +=1;
             }
         }

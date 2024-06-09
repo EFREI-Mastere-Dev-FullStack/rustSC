@@ -75,7 +75,7 @@ impl Base {
     }
 
     pub fn create_robot(&mut self, game: &mut Game) {
-        if (self.energy >= 5) {
+        if self.energy >= 5 {
             let robot_type: Robot_type = (
                 if game.count_robots(Robot_type::Scout) > game.count_robots(Robot_type::Harvester) {
                     Robot_type::Scout
@@ -83,14 +83,15 @@ impl Base {
                     Robot_type::Harvester
                 }
             );
-            game.add_robot(Robot::new(self.coordinates.x, self.coordinates.y, robot_type, game));
+            let new_robot: Robot = Robot::new(self.coordinates.x, self.coordinates.y, robot_type, game);
+            game.add_robot(new_robot);
         }
     }
 
     pub fn release_energy_and_merge(&mut self, robot: &mut Robot) {
         if robot.is_on_base(self) {
             if robot.is_carrying() {
-                if robot.resource() == Terrain::Energy {
+                if *robot.resource() == Terrain::Energy {
                     self.energy += 1;
                 } else {
                     self.ores += 1;

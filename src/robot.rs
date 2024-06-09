@@ -77,8 +77,8 @@ impl Robot {
         &mut self.known_map
     }
 
-    pub fn mission(self) -> Robot_type {
-        self.mission
+    pub fn mission(&self) -> &Robot_type {
+        &self.mission
     }
 
     pub fn set_mission(&mut self, mission: Robot_type) {
@@ -89,8 +89,8 @@ impl Robot {
         !(self.resource == Terrain::Void)
     }
 
-    pub fn resource(&mut self) -> Terrain {
-        *self.resource
+    pub fn resource(&self) -> &Terrain {
+        &self.resource
     }
 
     pub fn set_resource(&mut self, terrain: Terrain) {
