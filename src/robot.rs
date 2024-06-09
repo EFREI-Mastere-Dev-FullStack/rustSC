@@ -1,6 +1,5 @@
 extern crate rand;
 
-use std::cmp::PartialEq;
 use rand::Rng;
 use rand::seq::SliceRandom;
 use crate::base::Base;
@@ -97,12 +96,16 @@ impl Robot {
         self.resource = terrain;
     }
 
-    pub fn move_robot(&mut self, width: usize, height: usize, map: &mut Map, baseCoord: Position) {
+    pub fn set_void_terrains_discovered(&mut self, i: usize) {
+        self.void_terrains_discovered = i;
+    }
+
+    pub fn move_robot(&mut self, width: usize, height: usize, map: &mut Map, base: &mut Base) {
         match self.mission {
             Robot_type::Scout => {
                 println!("{0} void discovered", self.void_terrains_discovered);
                 if self.should_return_to_base() {
-                    if let Some(path) = self.find_path(self.position.as_tuple(), baseCoord.as_tuple()) {
+                    if let Some(path) = self.find_path(self.position.as_tuple(), (base.coordinates.y, base.coordinates.x)) {
                         if path.len() > 1 {
                             let next_step = path[1];
                             self.position.x = next_step.0;
@@ -123,9 +126,36 @@ impl Robot {
                     }
                 }
             },
-            _ => {},
+            _ => {
+                let mut pos_is_ok: bool = false;
+                while !pos_is_ok {
+                    let mut rng = rand::thread_rng();
+                    let direction = rng.gen_range(0..4);
+                    match direction {
+                        0 if self.position.x > 0 && self.can_move(self.position.x - 1, self.position.y) => {
+                            self.position.x -= 1;
+                            pos_is_ok = true;
+                        }
+                        1 if self.position.x < width - 1 && self.can_move(self.position.x + 1, self.position.y) => {
+                            self.position.x += 1;
+                            pos_is_ok = true;
+                        },
+                        2 if self.position.y > 0 && self.can_move(self.position.x, self.position.y - 1) => {
+                            self.position.y -= 1;
+                            pos_is_ok = true;
+                        },
+                        3 if self.position.y < height - 1 && self.can_move(self.position.x, self.position.y + 1) => {
+                            self.position.y += 1;
+                            pos_is_ok = true;
+                        },
+                        _ => {}
+                    }
+                }
+                self.on_resource(map);
+            },
         }
-    }*/
+        base.release_energy_and_merge(self);
+    }
 
     fn can_move(&self, x: usize, y: usize) -> bool {
         !Terrain::Wall.is_char(self.known_map.get_cell(x, y))
@@ -154,8 +184,8 @@ impl Robot {
     }
 
     pub(crate) fn is_on_base(&self, base: &mut Base) -> bool {
-        if (self.position.x == base.coordinates.x || self.position.x == base.coordinates.x + 1)
-            && (self.position.y == base.coordinates.y || self.position.y == base.coordinates.y + 1) {
+        if (self.position.y == base.coordinates.x || self.position.y == base.coordinates.x + 1)
+            && (self.position.x == base.coordinates.y || self.position.x == base.coordinates.y + 1) {
             return true;
         }
         false

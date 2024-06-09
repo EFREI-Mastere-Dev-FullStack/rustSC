@@ -63,12 +63,12 @@ fn main() {
     let mut game: Game = Game::new(width, height, seed);
     let robot: Robot = Robot::new(width / 2, height / 2, Robot_type::Scout, &mut game);
     game.add_robot(robot);
-    let robot2: Robot = Robot::new(width / 2 +1, height / 2, Robot_type::Scout, &mut game);
+    let robot2: Robot = Robot::new(width / 2 + 1, height / 2, Robot_type::Scout, &mut game);
     game.add_robot(robot2);
-    // let robot3: Robot = Robot::new(width / 2, height / 2+1, Robot_type::Scout, &mut game);
-    // game.add_robot(robot3);
-    // let robot4: Robot = Robot::new(width / 2+1, height / 2+1, Robot_type::Scout, &mut game);
-    // game.add_robot(robot4);
+    let robot3: Robot = Robot::new(width / 2, height / 2 + 1, Robot_type::Scout, &mut game);
+    game.add_robot(robot3);
+    let robot4: Robot = Robot::new(width / 2 + 1, height / 2 + 1, Robot_type::Scout, &mut game);
+    game.add_robot(robot4);
 
     game.update_known_maps();
     let mut paused: bool = false;
@@ -83,7 +83,7 @@ fn main() {
 
             game.update_known_maps();
 
-            game.base.merge_maps(&mut game.robots);
+            //game.base.merge_maps(&mut game.robots);
 
             game.base.print_merged_map(&mut game.robots); // print the discovered map from all robots TEST ONLY
 

@@ -6,7 +6,7 @@ use crate::robot::{Position, Robot};
 use crate::robot_type::Robot_type;
 use crate::terrain::Terrain;
 
-pub(crate) struct Base {
+pub struct Base {
     pub(crate) ores: usize,
     pub(crate) energy: usize,
     pub(crate) science: usize,
@@ -124,6 +124,7 @@ impl Base {
     }
 
     pub fn release_energy_and_merge(&mut self, robot: &mut Robot) {
+        print!("base: {}", robot.is_on_base(self));
         if robot.is_on_base(self) {
             if robot.is_carrying() {
                 match *robot.resource() {
@@ -133,6 +134,13 @@ impl Base {
                     _ => {}
                 }
                 robot.set_resource(Terrain::Void);
+            }
+
+            match robot.mission() {
+                Robot_type::Scout => {
+                    robot.set_void_terrains_discovered(0);
+                }
+                _ => {}
             }
         }
         self.merge_map(robot);

@@ -73,7 +73,7 @@ impl Game {
         let width = self.width();
         let height = self.height();
         for robot in &mut self.robots {
-            robot.move_robot(width, height, &mut self.map, self.base.coordinates);
+            robot.move_robot(width, height, &mut self.map, &mut self.base);
         }
     }
 
