@@ -8,7 +8,7 @@ pub(crate) struct Base {
     ores: usize,
     energy: usize,
     shared_map: Map,
-    coordinates: Position
+    pub(crate) coordinates: Position
 }
 
 impl Base {
@@ -87,6 +87,19 @@ impl Base {
         }
     }
 
+    pub fn release_energy_and_merge(&mut self, robot: &mut Robot) {
+        if robot.is_on_base(self) {
+            if robot.is_carrying() {
+                if robot.resource() == Terrain::Energy {
+                    self.energy += 1;
+                } else {
+                    self.ores += 1;
+                }
+                robot.set_resource(Terrain::Void);
+            }
+        }
+        self.merge_map(robot);
+    }
 
     pub fn add_ores(&mut self) {
         self.ores += 1;
