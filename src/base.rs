@@ -85,6 +85,7 @@ impl Base {
             );
             let new_robot: Robot = Robot::new(self.coordinates.x, self.coordinates.y, robot_type, game);
             game.add_robot(new_robot);
+            self.energy -= 5;
         }
     }
 
