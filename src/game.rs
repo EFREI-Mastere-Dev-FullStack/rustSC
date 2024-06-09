@@ -108,7 +108,7 @@ impl Game {
             }
 
             if y == 0 {
-                print!("   | Energy: {}, Ore: {}", self.base.energy, self.base.ores);
+                print!("   | Energy: {}, Ore: {}, Science: {}", self.base.energy, self.base.ores, self.base.science);
             }
             for (i, _) in self.robots.iter().enumerate() {
                 if y < self.robots.len() + 1 {
