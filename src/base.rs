@@ -3,13 +3,14 @@ use crate::robot::{Position, Robot};
 use crate::terrain::Terrain;
 
 pub(crate) struct Base {
-    resources: usize,
+    ores: usize,
+    energy: usize,
     shared_map: Map
 }
 
 impl Base {
     pub fn new(width: usize, height: usize) -> Self {
-        Base {resources: 0, shared_map: Map::new(width, height, Terrain::Void)}
+        Base {ores: 0, energy: 0, shared_map: Map::new(width, height, Terrain::Void)}
     }
 
     pub fn print_merged_map(&mut self, robots: &Vec<Robot>) {
@@ -65,7 +66,11 @@ impl Base {
     }
 
 
-    pub fn add_resource(&mut self) {
-        self.resources += 1;
+    pub fn add_ores(&mut self) {
+        self.ores += 1;
+    }
+
+    pub fn add_energy(&mut self) {
+        self.energy += 1;
     }
 }

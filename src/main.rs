@@ -17,22 +17,45 @@ use robot::Robot;
 
 // debug main
 fn main() {
-    let width = 80;
-    let height = 40;
-
-    /*println!("Entrez la seed :");
+    /*println!("Enter the map seed:");
 
     let mut input = String::new();
     let mut seed: u32 = 0;
-    io::stdin().read_line(&mut input).expect("Erreur lors de la lecture de l'entrée");
+    io::stdin().read_line(&mut input).expect("Error while reading the input");
 
-    if !input.trim().is_empty() {
-        seed = input.trim().parse().expect("Entrée invalide");
+     if !input.trim().is_empty() {
+        seed = input.trim().parse().expect("Invalid input");
     } else {
         let mut rng = thread_rng();
         seed = rng.gen();
+    }
+
+    println!("Enter the map height:");
+    let mut input = String::new();
+    let mut height: usize = 0;
+    io::stdin().read_line(&mut input).expect("Error while reading the input");
+
+     if !input.trim().is_empty() {
+        height = input.trim().parse().expect("Invalid input");
+    } else {
+        height = 40;
+    }
+
+    println!("Enter the map width:");
+    input = String::new();
+    let mut width: usize = 0;
+    io::stdin().read_line(&mut input).expect("Error while reading the input");
+
+    if !input.trim().is_empty() {
+        width = input.trim().parse().expect("Invalid input");
+    } else {
+        width = 80;
     }*/
+
     let seed: u32 = 1521335673;
+    let width = 80;
+    let height = 40;
+
     println!("Generating map with seed: {}", seed);
     let mut game: Game = Game::new(width, height, seed);
     let robot: Robot = Robot::new(width / 2, height / 2, &mut game);
@@ -54,7 +77,7 @@ fn main() {
         game.move_robots();
         game.update_known_maps();
         game.base.merge_map(&mut game.robots[0]);
-        game.base.print_merged_map(&mut game.robots);
+        //game.base.print_merged_map(&mut game.robots);
         game.base.merge_map(&mut game.robots[1]);
         game.base.merge_map(&mut game.robots[2]);
         game.base.merge_map(&mut game.robots[3]);
@@ -65,44 +88,3 @@ fn main() {
         sleep(Duration::from_millis(200));
     }
 }
-
-// core main
-/*fn main() {
-    let width = 80;
-    let height = 40;
-
-    println!("Entrez la seed :");
-
-    let mut input = String::new();
-    let mut seed: u32 = 0;
-    io::stdin().read_line(&mut input).expect("Erreur lors de la lecture de l'entrée");
-
-    if !input.trim().is_empty() {
-        seed = input.trim().parse().expect("Entrée invalide");
-    } else {
-        let mut rng = thread_rng();
-        seed = rng.gen();
-    }
-
-    println!("Generating map with seed: {}", seed);
-    let mut game: Game = Game::new(width, height, seed);
-    let robot: Robot = Robot::new(width / 2, height / 2, &mut game);
-    game.add_robot(robot);
-    let robot2: Robot = Robot::new(width / 2 +1, height / 2, &mut game);
-    game.add_robot(robot2);
-    let robot3: Robot = Robot::new(width / 2, height / 2+1, &mut game);
-    game.add_robot(robot3);
-    let robot4: Robot = Robot::new(width / 2+1, height / 2+1, &mut game);
-    game.add_robot(robot4);
-    game.update_known_maps();
-    game.robots()[0].print_map(seed);
-    loop {
-        print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-
-        game.print_map();
-        game.move_robots();
-        game.update_known_maps();
-
-        sleep(Duration::from_millis(200));
-    }
-}*/

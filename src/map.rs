@@ -23,8 +23,8 @@ impl Map {
     }
 
     pub fn print(&self) {
-        for (y, row) in self.data.iter().enumerate() {
-            for (x, col) in row.iter().enumerate() {
+        for (_, row) in self.data.iter().enumerate() {
+            for (_, col) in row.iter().enumerate() {
                 print!("{}", col);
             }
             println!();

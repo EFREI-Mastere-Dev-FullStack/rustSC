@@ -102,6 +102,7 @@ impl Robot {
                 _ => {}
             }
         }
+        self.on_resource();
     }
 
     fn can_move(&self, x: usize, y: usize) -> bool {
@@ -112,16 +113,18 @@ impl Robot {
     }
 
     fn on_resource(&mut self) {
-        if Terrain::Energy.is_char(self.known_map.get_cell(self.position().x, self.position().y))
-            || Terrain::Ore.is_char(self.known_map.get_cell(self.position().x, self.position().y)) {
+        if !self.is_carrying()
+            && (Terrain::Energy.is_char(self.known_map.get_cell(self.position().x, self.position().y))
+            || Terrain::Ore.is_char(self.known_map.get_cell(self.position().x, self.position().y))) {
             self.take_resource();
         }
     }
 
     fn take_resource(&mut self) {
-        if let Some(cell) = self.known_map.get_cell(self.position().x, self.position().y) {
+        if let Some(cell) = self.known_map.get_cell(self.position().y, self.position().x) {
             if !Some(cell).is_none() && !self.is_carrying() {
                 self.resource = Terrain::from_char(cell);
+                self.known_map.set_cell(Position {y: self.position().x, x: self.position().y}, Terrain::Ground.to_char());
             }
         }
     }
