@@ -104,6 +104,34 @@ impl Robot {
     }
 
     pub fn move_robot(&mut self, width: usize, height: usize, map: &mut Map) {
+        let mut pos_is_ok: bool = false;
+        while !pos_is_ok {
+            let mut rng = rand::thread_rng();
+            let direction = rng.gen_range(0..4);
+            match direction {
+                0 if self.position.x > 0 && self.can_move(self.position.x - 1, self.position.y) => {
+                    self.position.x -= 1;
+                    pos_is_ok = true;
+                }
+                1 if self.position.x < width - 1 && self.can_move(self.position.x + 1, self.position.y) => {
+                    self.position.x += 1;
+                    pos_is_ok = true;
+                },
+                2 if self.position.y > 0 && self.can_move(self.position.x, self.position.y - 1) => {
+                    self.position.y -= 1;
+                    pos_is_ok = true;
+                },
+                3 if self.position.y < height - 1 && self.can_move(self.position.x, self.position.y + 1) => {
+                    self.position.y += 1;
+                    pos_is_ok = true;
+                },
+                _ => {}
+            }
+        }
+        self.on_resource(map);
+    }
+
+   /* pub fn move_robot(&mut self, width: usize, height: usize, map: &mut Map) {
         if let Some(goal) = self.find_nearest_void() {
             if let Some(path) = self.find_path(self.position.as_tuple(), goal) {
                 if path.len() > 1 {
@@ -114,7 +142,7 @@ impl Robot {
                 }
             }
         }
-    }
+    }*/
 
     fn can_move(&self, x: usize, y: usize) -> bool {
         !Terrain::Wall.is_char(self.known_map.get_cell(x, y))
