@@ -6,6 +6,7 @@ mod robot;
 mod map;
 mod base;
 mod terrain;
+mod robot_type;
 
 use std::io;
 use std::time::Duration;
@@ -14,6 +15,7 @@ use std::thread::sleep;
 use rand::{Rng, thread_rng};
 use game::Game;
 use robot::Robot;
+use crate::robot_type::Robot_type;
 
 // debug main
 fn main() {
@@ -53,18 +55,18 @@ fn main() {
     }*/
 
     let seed: u32 = 1521335673;
-    let width = 80;
-    let height = 40;
+    let width: usize = 80;
+    let height: usize = 40;
 
     println!("Generating map with seed: {}", seed);
     let mut game: Game = Game::new(width, height, seed);
-    let robot: Robot = Robot::new(width / 2, height / 2, &mut game);
+    let robot: Robot = Robot::new(width / 2, height / 2, Robot_type::Scout, &mut game);
     game.add_robot(robot);
-    let robot2: Robot = Robot::new(width / 2 +1, height / 2, &mut game);
+    let robot2: Robot = Robot::new(width / 2 +1, height / 2, Robot_type::Scout, &mut game);
     game.add_robot(robot2);
-    let robot3: Robot = Robot::new(width / 2, height / 2+1, &mut game);
+    let robot3: Robot = Robot::new(width / 2, height / 2+1, Robot_type::Scout, &mut game);
     game.add_robot(robot3);
-    let robot4: Robot = Robot::new(width / 2+1, height / 2+1, &mut game);
+    let robot4: Robot = Robot::new(width / 2+1, height / 2+1, Robot_type::Scout, &mut game);
     game.add_robot(robot4);
 
     game.update_known_maps();

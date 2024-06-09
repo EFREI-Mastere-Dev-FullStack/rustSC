@@ -1,9 +1,11 @@
 extern crate rand;
 
 use std::cmp::PartialEq;
+use std::ops::Deref;
 use rand::Rng;
 use crate::map::Map;
 use crate::game::Game;
+use crate::robot_type::Robot_type;
 use crate::terrain::Terrain;
 
 #[derive(Clone, Copy)]
@@ -26,6 +28,7 @@ pub struct Robot {
     position: Position,
     pub(crate) known_map: Map,
     resource: Terrain,
+    mission: Robot_type,
 }
 
 impl PartialEq for Terrain {
@@ -35,11 +38,12 @@ impl PartialEq for Terrain {
 }
 
 impl Robot {
-    pub fn new(x: usize, y: usize, game: &mut Game) -> Robot {
+    pub fn new(x: usize, y: usize, mission: Robot_type, game: &mut Game) -> Robot {
         Robot {
             position: Position::new(x, y),
             known_map: Map::new(game.width(), game.height(), Terrain::Void),
             resource: Terrain::Void,
+            mission: mission
         }
     }
 
@@ -71,6 +75,14 @@ impl Robot {
 
     pub fn known_map(&mut self) -> &mut Map {
         &mut self.known_map
+    }
+
+    pub fn mission(&mut self) -> &mut Robot_type {
+        &mut self.mission
+    }
+
+    pub fn set_mission(&mut self, mission: Robot_type) {
+        self.mission = mission;
     }
 
     pub fn is_carrying(&self) -> bool {
