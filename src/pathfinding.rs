@@ -99,7 +99,7 @@ fn get_neighbors(robot: &Robot, position: (usize, usize)) -> Vec<(usize, usize)>
             let terrain_char = robot.known_map.data[new_pos.1][new_pos.0];
             let terrain = Terrain::from_char(terrain_char);
 
-            if terrain != Terrain::Wall && terrain != Terrain::Mountain && terrain != Terrain::Void {
+            if terrain != Terrain::Wall && terrain != Terrain::Mountain {
                 neighbors.push(new_pos);
             }
         }

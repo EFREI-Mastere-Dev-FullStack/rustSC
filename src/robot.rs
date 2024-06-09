@@ -26,7 +26,7 @@ impl Position {
     }
 }
 
-const MAX_VOID_TERRAINS: usize = 50;
+const MAX_VOID_TERRAINS: usize = 100;
 
 pub struct Robot {
     position: Position, // x = height, y = width
@@ -103,16 +103,33 @@ impl Robot {
         self.resource = terrain;
     }
 
-    pub fn move_robot(&mut self, width: usize, height: usize, map: &mut Map) {
-        if let Some(goal) = self.find_nearest_void() {
-            if let Some(path) = self.find_path(self.position.as_tuple(), goal) {
-                if path.len() > 1 {
-                    let next_step = path[1];
-                    self.position.x = next_step.0;
-                    self.position.y = next_step.1;
-                    self.on_resource(map);
+    pub fn move_robot(&mut self, width: usize, height: usize, map: &mut Map, baseCoord: Position) {
+        match self.mission {
+            Robot_type::Scout => {
+                println!("{0} void discovered", self.void_terrains_discovered);
+                if self.should_return_to_base() {
+                    if let Some(path) = self.find_path(self.position.as_tuple(), baseCoord.as_tuple()) {
+                        if path.len() > 1 {
+                            let next_step = path[1];
+                            self.position.x = next_step.0;
+                            self.position.y = next_step.1;
+                            self.on_resource(map);
+                        }
+                    }
+                } else {
+                    if let Some(goal) = self.find_nearest_void() {
+                        if let Some(path) = self.find_path(self.position.as_tuple(), goal) {
+                            if path.len() > 1 {
+                                let next_step = path[1];
+                                self.position.x = next_step.0;
+                                self.position.y = next_step.1;
+                                self.on_resource(map);
+                            }
+                        }
+                    }
                 }
-            }
+            },
+            _ => {},
         }
     }
 
@@ -165,8 +182,10 @@ impl Robot {
 
                 let cell_value = map.get_cell(x as usize, y as usize);
                 if !cell_value.is_none() {
+                    if (self.known_map.get_cell(x as usize, y as usize).unwrap() == Terrain::Void.to_char()) {
+                        self.void_terrains_discovered += 1;
+                    }
                     self.set_cell(Position { x: y as usize, y: x as usize }, cell_value.unwrap());
-                    self.void_terrains_discovered += 1;
                 }
             }
         }
@@ -177,7 +196,12 @@ impl Robot {
     }
 
     pub fn should_return_to_base(&self) -> bool {
-        self.mission == Robot_type::Scout && self.void_terrains_discovered >= MAX_VOID_TERRAINS
+        match self.mission {
+            Robot_type::Scout => {
+                self.void_terrains_discovered >= MAX_VOID_TERRAINS
+            },
+            _ => false,
+        }
     }
 
     fn find_nearest_void(&self) -> Option<(usize, usize)> {

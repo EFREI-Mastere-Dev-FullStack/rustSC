@@ -65,10 +65,10 @@ fn main() {
     game.add_robot(robot);
     let robot2: Robot = Robot::new(width / 2 +1, height / 2, Robot_type::Scout, &mut game);
     game.add_robot(robot2);
-    let robot3: Robot = Robot::new(width / 2, height / 2+1, Robot_type::Scout, &mut game);
-    game.add_robot(robot3);
-    let robot4: Robot = Robot::new(width / 2+1, height / 2+1, Robot_type::Scout, &mut game);
-    game.add_robot(robot4);
+    // let robot3: Robot = Robot::new(width / 2, height / 2+1, Robot_type::Scout, &mut game);
+    // game.add_robot(robot3);
+    // let robot4: Robot = Robot::new(width / 2+1, height / 2+1, Robot_type::Scout, &mut game);
+    // game.add_robot(robot4);
 
     game.update_known_maps();
     let mut paused: bool = false;
@@ -77,7 +77,7 @@ fn main() {
         if !paused {
             print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
             println!("Press 'p' + ENTER to pause or 'q' + ENTER to quit");
-            game.print_map(); // print the all map
+            //game.print_map(); // print the all map
 
             game.move_robots();
 
@@ -85,7 +85,7 @@ fn main() {
 
             game.base.merge_maps(&mut game.robots);
 
-            //game.base.print_merged_map(&mut game.robots); // print the discovered map from all robots TEST ONLY
+            game.base.print_merged_map(&mut game.robots); // print the discovered map from all robots TEST ONLY
 
             //game.robots()[0].print_map(seed); // print one robot self map
 
