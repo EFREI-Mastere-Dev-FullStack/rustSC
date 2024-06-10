@@ -1,5 +1,5 @@
-use crate::robot::{Position};
-use crate::terrain::Terrain;
+use crate::core::robot::{Position};
+use crate::utils::terrain::Terrain;
 
 #[derive(Clone)]
 pub struct Map {

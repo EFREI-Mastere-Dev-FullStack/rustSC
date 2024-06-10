@@ -1,13 +1,8 @@
 extern crate noise;
 extern crate rand;
 mod utils;
-mod game;
-mod robot;
-mod map;
-mod base;
-mod terrain;
-mod pathfinding;
-mod robot_type;
+mod core;
+
 
 use std::io;
 use std::time::Duration;
@@ -15,9 +10,9 @@ use std::thread::sleep;
 
 use rand::{Rng, thread_rng};
 use crossterm::event::{self, Event, KeyCode};
-use game::Game;
-use robot::Robot;
-use crate::robot_type::Robot_type;
+use crate::core::game::Game;
+use crate::core::robot::Robot;
+use crate::utils::robot_type::Robot_type;
 
 // debug main
 fn main() {
@@ -67,8 +62,6 @@ fn main() {
         fow = 'N';
     }
 
-    let seed: u32 = 1521335673; // FIXME remove
-
     println!("Generating map with seed: {}", seed);
     let mut game: Game = Game::new(width, height, seed);
     let robot: Robot = Robot::new(width / 2, height / 2, Robot_type::Scout, &mut game);
@@ -89,7 +82,9 @@ fn main() {
             if fow == 'N' {
                 game.print_map();
             } else {
-                game.base.print_merged_map(&mut game.robots, &mut game.point);
+                let data_treatment = game.data_treatment();
+                let is_treating_data = game.is_treating_data();
+                game.base.print_merged_map(&mut game.robots, &mut game.point, data_treatment, is_treating_data);
             }
             game.move_robots();
             game.update_known_maps();

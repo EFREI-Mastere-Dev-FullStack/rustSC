@@ -1,12 +1,12 @@
 extern crate rand;
 
 use rand::seq::SliceRandom;
-use crate::base::Base;
-use crate::map::Map;
-use crate::game::Game;
-use crate::robot_type::Robot_type;
-use crate::terrain::Terrain;
-use crate::pathfinding;
+use crate::core::base::Base;
+use crate::utils::map::Map;
+use crate::core::game::Game;
+use crate::utils::robot_type::Robot_type;
+use crate::utils::terrain::Terrain;
+use crate::utils::pathfinding;
 
 #[derive(Clone, Copy)]
 pub struct Position {

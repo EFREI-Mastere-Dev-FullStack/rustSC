@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap};
-use crate::robot::Robot;
-use crate::terrain::Terrain;
+use crate::core::robot::Robot;
+use crate::utils::terrain::Terrain;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Node {

@@ -1,12 +1,11 @@
 use noise::{NoiseFn, Perlin};
 use crate::utils::{get_char};
-use robot::Robot;
-use crate::map::Map;
-use crate::robot;
-use crate::robot::Position;
-use crate::terrain::Terrain;
-use crate::base::Base;
-use crate::robot_type::Robot_type;
+use crate::utils::map::Map;
+use crate::core::robot::Robot;
+use crate::core::robot::Position;
+use crate::utils::terrain::Terrain;
+use crate::core::base::Base;
+use crate::utils::robot_type::Robot_type;
 
 pub const SCIENCE_NEEDED: usize = 2;
 pub const TREATMENT_TIME: usize = 30;
@@ -99,6 +98,10 @@ impl Game {
         self.base.reset_data();
     }
 
+    pub fn data_treatment(&self) -> usize {
+        self.data_treatment
+    }
+
     pub fn treat_data(&mut self) {
         if self.data_treatment == TREATMENT_TIME {
             self.add_point();
@@ -144,7 +147,13 @@ impl Game {
             for (i, _) in self.robots.iter().enumerate() {
                 if y < self.robots.len() + 1 {
                     if y == i + 1 {
-                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {}, Goal: x, {}, y: {})",
+                        let robot_char: char = match &self.robots[i].mission() {
+                            Robot_type::Scout => Terrain::Scout.to_char(),
+                            Robot_type::Harvester => Terrain::Harvester.to_char(),
+                            Robot_type::Scientist => Terrain::Scientist.to_char()
+                        };
+                        print!("   | Mission: {} {}, Position: (x: {}, y: {}), Resource: {}, Goal: x, {}, y: {})",
+                               robot_char,
                                &self.robots[i].mission().to_string(),
                                &self.robots[i].position().x,
                                &self.robots[i].position().y,

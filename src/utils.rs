@@ -1,4 +1,9 @@
-use crate::terrain::Terrain;
+use crate::utils::terrain::Terrain;
+
+pub mod map;
+pub mod terrain;
+pub mod robot_type;
+pub mod pathfinding;
 
 pub fn get_char(val: f64) -> char {
     match val.abs() {

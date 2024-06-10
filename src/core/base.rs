@@ -1,9 +1,9 @@
 use std::collections::VecDeque;
-use crate::game::SCIENCE_NEEDED;
-use crate::map::Map;
-use crate::robot::{Position, Robot};
-use crate::robot_type::Robot_type;
-use crate::terrain::Terrain;
+use crate::core::game::{SCIENCE_NEEDED, TREATMENT_TIME};
+use crate::utils::map::Map;
+use crate::core::robot::{Position, Robot};
+use crate::utils::robot_type::Robot_type;
+use crate::utils::terrain::Terrain;
 
 pub struct Base {
     pub(crate) ores: usize,
@@ -30,7 +30,7 @@ impl Base {
         }
     }
 
-    pub fn print_merged_map(&mut self, robots: &Vec<Robot>, points: &mut usize) {
+    pub fn print_merged_map(&mut self, robots: &Vec<Robot>, points: &mut usize, data_treatment: usize, is_treating_data: bool) {
        /* print!("len r: {}", self.resource_queue.len());
         for i in 0..self.resource_queue.len() {
             print!("(x: {}, y: {}, r: {}), ", self.resource_queue[i].x, self.resource_queue[i].y, self.shared_map.get_cell(self.resource_queue[i].y, self.resource_queue[i].x).unwrap())
@@ -64,7 +64,13 @@ impl Base {
             for (i, _) in robots.iter().enumerate() {
                 if y < robots.len() + 2 {
                     if y == i + 2 {
-                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {}, Goal: x: {}, y: {}",
+                        let robot_char: char = match robots[i].mission() {
+                            Robot_type::Scout => Terrain::Scout.to_char(),
+                            Robot_type::Harvester => Terrain::Harvester.to_char(),
+                            Robot_type::Scientist => Terrain::Scientist.to_char()
+                        };
+                        print!("   | Mission: {} {}, Position: (x: {}, y: {}), Resource: {}, Goal: x: {}, y: {}",
+                               robot_char,
                                robots[i].mission().to_string(),
                                robots[i].position().x,
                                robots[i].position().y,
@@ -76,6 +82,17 @@ impl Base {
                 }
             }
             println!();
+        }
+        if is_treating_data {
+            print!("Data Treatment: {}% |", (100 * data_treatment) / TREATMENT_TIME);
+            for _ in 0..data_treatment - 1 {
+                print!("=");
+            }
+            print!(">");
+            for _ in data_treatment - 1..TREATMENT_TIME {
+                print!(" ");
+            }
+            println!("|");
         }
     }
 
