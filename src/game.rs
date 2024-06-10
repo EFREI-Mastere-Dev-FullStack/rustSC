@@ -111,7 +111,7 @@ impl Game {
     }
 
     pub fn print_map(&self) {
-        print!("len r: {}", self.base.resource_queue.len());
+       /* print!("len r: {}", self.base.resource_queue.len());
         for i in 0..self.base.resource_queue.len() {
             print!("(x: {}, y: {}, r: {}), ", self.base.resource_queue[i].x, self.base.resource_queue[i].y, self.base.shared_map.get_cell(self.base.resource_queue[i].y, self.base.resource_queue[i].x).unwrap())
         }
@@ -119,17 +119,17 @@ impl Game {
         print!("len s: {}", self.base.science_queue.len());
         for i in 0..self.base.science_queue.len() {
             print!("(x: {}, y: {}, r: {}), ", self.base.science_queue[i].x, self.base.science_queue[i].y, self.base.shared_map.get_cell(self.base.science_queue[i].y, self.base.science_queue[i].x).unwrap())
-        }
+        }*/
         println!();
         for (y, row) in self.map.data.iter().enumerate() {
             for (x, col) in row.iter().enumerate() {
                 let mut is_robot = false;
                 for robot in &self.robots {
                     if (x, y) == robot.position().as_tuple() {
-                        //let displayed_robot = if !robot.is_carrying() { Terrain::Robot.to_char() } else { Terrain::CarryingRobot.to_char() };
-                        let mission = robot.mission().to_string();
+                        let displayed_robot = if !robot.is_carrying() { Terrain::Robot.to_char() } else { Terrain::CarryingRobot.to_char() };
+                        /*let mission = robot.mission().to_string();
                         let displayed_robot = if mission ==  Robot_type::Scout.to_string() {"S"} else if mission == Robot_type::Harvester.to_string() {"H"} else {"I"};
-                        print!("{}", displayed_robot);
+                       */ print!("{}", displayed_robot);
                         is_robot = true;
                         break;
                     }

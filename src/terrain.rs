@@ -17,13 +17,13 @@ impl Terrain {
             Terrain::Wall => '▒',
             Terrain::Mountain => '▓',
             Terrain::Ore => '♦',
-            Terrain::Ground => '.', // for debug then ' '
+            Terrain::Ground => ' ', // for debug then ' '
             Terrain::Energy => '♥',
             Terrain::Robot => '☻',
             Terrain::Science => '▲',
             Terrain::CarryingRobot => '☺',
             Terrain::Base => '╔',
-            Terrain::Void => ' ' // for debug then '.'
+            Terrain::Void => '.' // for debug then '.'
         }
     }
 
@@ -32,7 +32,7 @@ impl Terrain {
             '▒' => Terrain::Wall,
             '▓' => Terrain::Mountain,
             '♦' => Terrain::Ore,
-            '.' => Terrain::Ground, // for debug then ' '
+            ' ' => Terrain::Ground, // for debug then ' '
             '♥' => Terrain::Energy,
             '☻' => Terrain::Robot,
             '▲' => Terrain::Science,
