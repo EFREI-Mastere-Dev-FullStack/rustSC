@@ -151,7 +151,7 @@ impl Robot {
                         }
                     }
                 } else {
-                    if !base.resource_queue().is_empty() && self.goal.is_none() {
+                    if !base.resource_queue().is_empty() && (self.goal.is_none() || Terrain::Ground.is_char(self.known_map.get_cell(self.goal.unwrap().y, self.goal.unwrap().x))) {
                         self.set_goal(base.pop_resource_queue());
                     }
                     if !self.goal().is_none() {
@@ -179,8 +179,8 @@ impl Robot {
                         }
                     }
                 } else {
-                    if !base.science_queue().is_empty() && self.goal.is_none() {
-                        self.set_goal(base.pop_science_queue());
+                    if !base.science_queue().is_empty() && (self.goal.is_none() || Terrain::Ground.is_char(self.known_map.get_cell(self.goal.unwrap().y, self.goal.unwrap().x))) {
+                    self.set_goal(base.pop_science_queue());
                     }
                     if let Some(goal) = Some(self.goal) {
                         if !self.goal().is_none() {
@@ -209,11 +209,15 @@ impl Robot {
 
     fn on_resource(&mut self, map: &mut Map) {
         if !self.is_carrying()
-            && Robot_type::Scout.to_string() != self.mission().to_string()
-            && (Terrain::Energy.is_char(self.known_map.get_cell(self.position().x, self.position().y))
-            || Terrain::Ore.is_char(self.known_map.get_cell(self.position().x, self.position().y))
-            || Terrain::Science.is_char(self.known_map.get_cell(self.position().x, self.position().y))) {
-            self.take_resource(map);
+            && Robot_type::Scout.to_string() != self.mission().to_string() {
+            if (Terrain::Energy.is_char(self.known_map.get_cell(self.position().x, self.position().y))
+                || Terrain::Ore.is_char(self.known_map.get_cell(self.position().x, self.position().y)))
+                && self.mission.to_string().eq(Robot_type::Harvester.to_string()) {
+                self.take_resource(map);
+            } else if Terrain::Science.is_char(self.known_map.get_cell(self.position().x, self.position().y))
+                && self.mission.to_string().eq(Robot_type::Scientist.to_string()){
+                self.take_resource(map);
+            }
         }
     }
 

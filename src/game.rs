@@ -8,13 +8,17 @@ use crate::terrain::Terrain;
 use crate::base::Base;
 use crate::robot_type::Robot_type;
 
+pub const SCIENCE_NEEDED: usize = 2;
+pub const TREATMENT_TIME: usize = 30;
+
 pub struct Game {
     pub(crate) map: Map,
     pub(crate) robots: Vec<Robot>,
     pub(crate) base: Base,
     seed: u32,
     resources_to_create: usize,
-    point: usize,
+    pub(crate) point: usize,
+    data_treatment: usize
 }
 
 impl Game {
@@ -48,7 +52,7 @@ impl Game {
         map.set_cell(Position {x: center_y + 1, y: center_x}, '╚');
         map.set_cell(Position {x: center_y + 1, y: center_x + 1}, '╝');
 
-        Game { map: map, robots: Vec::new(), seed: seed, base: Base::new(width, height, center_y, center_x), resources_to_create: 1, point: 0}
+        Game { map: map, robots: Vec::new(), seed: seed, base: Base::new(width, height, center_y, center_x), resources_to_create: 1, point: 0, data_treatment: 0}
     }
 
     pub fn add_robot(&mut self, robot: Robot) {
@@ -83,13 +87,48 @@ impl Game {
         }
     }
 
+    pub fn add_point(&mut self) {
+        self.point += 1;
+    }
+
+    pub fn is_treating_data(&self) -> bool {
+        self.base.science >= SCIENCE_NEEDED
+    }
+
+    pub fn reset_data(&mut self) {
+        self.base.reset_data();
+    }
+
+    pub fn treat_data(&mut self) {
+        if self.data_treatment == TREATMENT_TIME {
+            self.add_point();
+            self.data_treatment = 0;
+            self.base.reset_data();
+        }
+        else if self.is_treating_data() {
+            self.data_treatment += 1;
+        }
+    }
+
     pub fn print_map(&self) {
+        print!("len r: {}", self.base.resource_queue.len());
+        for i in 0..self.base.resource_queue.len() {
+            print!("(x: {}, y: {}, r: {}), ", self.base.resource_queue[i].x, self.base.resource_queue[i].y, self.base.shared_map.get_cell(self.base.resource_queue[i].y, self.base.resource_queue[i].x).unwrap())
+        }
+        println!();
+        print!("len s: {}", self.base.science_queue.len());
+        for i in 0..self.base.science_queue.len() {
+            print!("(x: {}, y: {}, r: {}), ", self.base.science_queue[i].x, self.base.science_queue[i].y, self.base.shared_map.get_cell(self.base.science_queue[i].y, self.base.science_queue[i].x).unwrap())
+        }
+        println!();
         for (y, row) in self.map.data.iter().enumerate() {
             for (x, col) in row.iter().enumerate() {
                 let mut is_robot = false;
                 for robot in &self.robots {
                     if (x, y) == robot.position().as_tuple() {
-                        let displayed_robot = if !robot.is_carrying() { Terrain::Robot.to_char() } else { Terrain::CarryingRobot.to_char() };
+                        //let displayed_robot = if !robot.is_carrying() { Terrain::Robot.to_char() } else { Terrain::CarryingRobot.to_char() };
+                        let mission = robot.mission().to_string();
+                        let displayed_robot = if mission ==  Robot_type::Scout.to_string() {"S"} else if mission == Robot_type::Harvester.to_string() {"H"} else {"I"};
                         print!("{}", displayed_robot);
                         is_robot = true;
                         break;
@@ -101,23 +140,35 @@ impl Game {
             }
 
             if y == 0 {
-                print!("   | Energy: {}, Ore: {}, Science: {}, Robots: {}", self.base.energy, self.base.ores, self.base.science, self.robots.len());
+                print!("   | Point: {}, Energy: {}, Ore: {}, Science: {}, Robots: {}", self.point, self.base.energy, self.base.ores, self.base.science, self.robots.len());
             }
             for (i, _) in self.robots.iter().enumerate() {
                 if y < self.robots.len() + 1 {
                     if y == i + 1 {
-                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {})",
+                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {}, Goal: x, {}, y: {})",
                                &self.robots[i].mission().to_string(),
                                &self.robots[i].position().x,
                                &self.robots[i].position().y,
-                               &self.robots[i].resource().to_char()
+                               &self.robots[i].resource().to_char(),
+                               &self.robots[i].goal().unwrap_or_else(|| Position {x: 0, y:0}).y,
+                               &self.robots[i].goal().unwrap_or_else(|| Position {x: 0, y:0}).x
                         )
                     }
                 }
             }
             println!();
         }
-        print!("{}", self.seed);
+        if self.is_treating_data() {
+            print!("Data Treatment: {}% |", (100 * self.data_treatment) / TREATMENT_TIME);
+            for _ in 0..self.data_treatment - 1 {
+                print!("=");
+            }
+            print!(">");
+            for _ in self.data_treatment - 1..TREATMENT_TIME {
+                print!(" ");
+            }
+            println!("|");
+        }
     }
 
     pub fn count_robots(&self, robot_type: Robot_type) -> usize {

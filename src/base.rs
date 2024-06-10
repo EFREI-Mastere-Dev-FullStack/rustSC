@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use crate::game::SCIENCE_NEEDED;
 use crate::map::Map;
 use crate::robot::{Position, Robot};
 use crate::robot_type::Robot_type;
@@ -8,11 +9,11 @@ pub struct Base {
     pub(crate) ores: usize,
     pub(crate) energy: usize,
     pub(crate) science: usize,
-    shared_map: Map,
+    pub(crate) shared_map: Map,
     pub(crate) coordinates: Position,
-    science_queue: VecDeque<Position>,
-    resource_queue: VecDeque<Position>,
-    detected_resources: Vec<Position>
+    pub(crate) science_queue: VecDeque<Position>,
+    pub(crate) resource_queue: VecDeque<Position>,
+    pub(crate) detected_resources: Vec<Position>
 }
 
 impl Base {
@@ -29,13 +30,25 @@ impl Base {
         }
     }
 
-    pub fn print_merged_map(&mut self, robots: &Vec<Robot>) {
+    pub fn print_merged_map(&mut self, robots: &Vec<Robot>, points: &mut usize) {
+        print!("len r: {}", self.resource_queue.len());
+        for i in 0..self.resource_queue.len() {
+            print!("(x: {}, y: {}, r: {}), ", self.resource_queue[i].x, self.resource_queue[i].y, self.shared_map.get_cell(self.resource_queue[i].y, self.resource_queue[i].x).unwrap())
+        }
+        println!();
+        print!("len s: {}", self.science_queue.len());
+        for i in 0..self.science_queue.len() {
+            print!("(x: {}, y: {}, r: {}), ", self.science_queue[i].x, self.science_queue[i].y, self.shared_map.get_cell(self.science_queue[i].y, self.science_queue[i].x).unwrap())
+        }
+        println!();
         for (y, row) in self.shared_map.data.iter().enumerate() {
             for (x, col) in row.iter().enumerate() {
                 let mut is_robot = false;
                 for robot in robots {
                     if (x, y) == robot.position().as_tuple() {
-                        let displayed_robot = if !robot.is_carrying() { Terrain::Robot.to_char() } else { Terrain::CarryingRobot.to_char() };
+                        //let displayed_robot = if !robot.is_carrying() { Terrain::Robot.to_char() } else { Terrain::CarryingRobot.to_char() };
+                        let mission = robot.mission().to_string();
+                        let displayed_robot = if mission ==  Robot_type::Scout.to_string() {"S"} else if mission == Robot_type::Harvester.to_string() {"H"} else {"I"};
                         print!("{}", displayed_robot);
                         is_robot = true;
                         break;
@@ -47,16 +60,18 @@ impl Base {
             }
 
             if y == 0 {
-                print!("   | Energy: {}, Ore: {}, Science: {}", self.energy, self.ores, self.science);
+                print!("   | Points: {}, Energy: {}, Ore: {}, Science: {}", points, self.energy, self.ores, self.science);
             }
             for (i, _) in robots.iter().enumerate() {
-                if y < robots.len() + 1 {
-                    if y == i + 1 {
-                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {})",
+                if y < robots.len() + 2 {
+                    if y == i + 2 {
+                        print!("   | Mission: {}, Position: (x: {}, y: {}), Resource: {}, Goal: x: {}, y: {}",
                                robots[i].mission().to_string(),
                                robots[i].position().x,
                                robots[i].position().y,
-                               robots[i].resource().to_char()
+                               robots[i].resource().to_char(),
+                               robots[i].goal().unwrap_or_else(|| Position {x: 0, y:0}).y,
+                               robots[i].goal().unwrap_or_else(|| Position {x: 0, y:0}).x
                         )
                     }
                 }
@@ -81,6 +96,10 @@ impl Base {
         self.resource_queue.pop_front()
     }
 
+    pub fn reset_data(&mut self) {
+        self.science -= SCIENCE_NEEDED;
+    }
+
     pub fn resource_queue(&self) -> &VecDeque<Position> {
         &self.resource_queue
     }
@@ -97,6 +116,27 @@ impl Base {
         let width = self.shared_map.width();
         let height = self.shared_map.height();
         let mut new_map = Map::new(width, height, Terrain::Void);
+
+        let mut i: isize = 0;
+        while i < self.resource_queue.len() as isize {
+            if let Some(cell) = self.shared_map.get_cell(self.resource_queue.get(i as usize).unwrap().y, self.resource_queue.get(i as usize).unwrap().x) {
+                if cell == Terrain::Ground.to_char() {
+                    self.resource_queue.remove(i as usize);
+                    i -= 1;
+                }
+            }
+            i += 1;
+        }
+
+        while i < self.science_queue.len() as isize {
+            if let Some(cell) = self.shared_map.get_cell(self.science_queue.get(i as usize).unwrap().y, self.science_queue.get(i as usize).unwrap().x) {
+                if cell == Terrain::Ground.to_char() {
+                    self.science_queue.remove(i as usize);
+                    i -= 1;
+                }
+            }
+            i += 1;
+        }
 
         for x in 0..height {
             for y in 0..width {
