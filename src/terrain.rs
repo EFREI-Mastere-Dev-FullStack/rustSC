@@ -17,10 +17,10 @@ impl Terrain {
         match self {
             Terrain::Wall => '▒',
             Terrain::Mountain => '▓',
-            Terrain::Ore => '✧',             //
+            Terrain::Ore => '𐳖',
             Terrain::Ground => ' ',
-            Terrain::Energy => '𐌔',
-            Terrain::Scientist => '♝',       //
+            Terrain::Energy => '𐦬',
+            Terrain::Scientist => '♝',
             Terrain::Harvester => '⛏',
             Terrain::Scout => '♞',
             Terrain::Science => '⚛',
@@ -33,9 +33,9 @@ impl Terrain {
         match val {
             '▒' => Terrain::Wall,
             '▓' => Terrain::Mountain,
-            '✧' => Terrain::Ore,
+            '𐳖' => Terrain::Ore,
             ' ' => Terrain::Ground,
-            '𐌔' => Terrain::Energy,
+            '𐦬' => Terrain::Energy,
             '♝' => Terrain::Scientist,
             '⛏' => Terrain::Harvester,
             '♞' => Terrain::Scout,
