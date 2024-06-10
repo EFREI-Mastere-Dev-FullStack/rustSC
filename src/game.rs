@@ -182,7 +182,7 @@ impl Game {
             print!("{}, {}, {}", scout_count, scientist_count, harvester_count);
             let robot_type = if scout_count <= harvester_count && scout_count <= scientist_count {
                 Robot_type::Scout
-            } else if scientist_count <= scout_count && scientist_count <= harvester_count {
+            } else if scientist_count + 1 <= scout_count && scientist_count + 1 <= harvester_count { // balance usefulness
                 Robot_type::Scientist
             } else if harvester_count <= scout_count && harvester_count <= scientist_count {
                 Robot_type::Harvester
