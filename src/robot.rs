@@ -53,24 +53,6 @@ impl Robot {
         }
     }
 
-    pub fn print_map(&self, seed: u32) {
-        for (y, row)in self.known_map.data.iter().enumerate() {
-            for (x, col) in row.iter().enumerate() {
-                let mut is_robot = false;
-                if (x, y) == self.position().as_tuple() {
-                    print!("{}", Terrain::Robot.to_char());
-                    is_robot = true;
-                    break;
-                }
-                if !is_robot {
-                    print!("{}", col);
-                }
-            }
-            println!();
-        }
-        print!("{}", seed.to_string());
-    }
-
     pub fn set_known_map(&mut self, map: Map) {
         self.known_map = map;
     }
@@ -151,10 +133,13 @@ impl Robot {
                         }
                     }
                 } else {
-                    if !base.resource_queue().is_empty() && (self.goal.is_none() || Terrain::Ground.is_char(self.known_map.get_cell(self.goal.unwrap().y, self.goal.unwrap().x))) {
+                    if !self.goal.is_none() && Terrain::Ground.is_char(self.known_map.get_cell(self.goal.unwrap().y, self.goal.unwrap().x)) && base.resource_queue().is_empty() {
+                        self.set_goal(Some(base.coordinates));
+                    }
+                    else if !base.resource_queue().is_empty() && (self.goal.is_none() || Terrain::Ground.is_char(self.known_map.get_cell(self.goal.unwrap().y, self.goal.unwrap().x))) {
                         self.set_goal(base.pop_resource_queue());
                     }
-                    if !self.goal().is_none() {
+                    if !self.goal().is_none() && !Terrain::Base.is_char(self.known_map.get_cell(self.goal.unwrap().y, self.goal.unwrap().x)) {
                         if let Some(goal) = Some(self.goal) {
                             if let Some(path) = self.find_path(self.position.as_tuple(), (goal.unwrap().y, goal.unwrap().x)) {
                                 if path.len() > 1 {
@@ -179,11 +164,14 @@ impl Robot {
                         }
                     }
                 } else {
-                    if !base.science_queue().is_empty() && (self.goal.is_none() || Terrain::Ground.is_char(self.known_map.get_cell(self.goal.unwrap().y, self.goal.unwrap().x))) {
-                    self.set_goal(base.pop_science_queue());
+                    if !self.goal.is_none() && Terrain::Ground.is_char(self.known_map.get_cell(self.goal.unwrap().y, self.goal.unwrap().x)) && base.science_queue().is_empty() {
+                        self.set_goal(Some(base.coordinates));
                     }
-                    if let Some(goal) = Some(self.goal) {
-                        if !self.goal().is_none() {
+                    else if !base.science_queue().is_empty() && (self.goal.is_none() || Terrain::Ground.is_char(self.known_map.get_cell(self.goal.unwrap().y, self.goal.unwrap().x))) {
+                        self.set_goal(base.pop_science_queue());
+                    }
+                    if !self.goal().is_none() && !Terrain::Base.is_char(self.known_map.get_cell(self.goal.unwrap().y, self.goal.unwrap().x)) {
+                        if let Some(goal) = Some(self.goal) {
                             if let Some(path) = self.find_path(self.position.as_tuple(), (goal.unwrap().y, goal.unwrap().x)) {
                                 if path.len() > 1 {
                                     let next_step = path[1];
@@ -203,7 +191,6 @@ impl Robot {
     fn can_move(&self, x: usize, y: usize) -> bool {
         !Terrain::Wall.is_char(self.known_map.get_cell(x, y))
             && !Terrain::Mountain.is_char(self.known_map.get_cell(x, y))
-            && !Terrain::Robot.is_char(self.known_map.get_cell(x, y))
             && !Terrain::Void.is_char(self.known_map.get_cell(x, y))
     }
 

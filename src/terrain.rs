@@ -4,9 +4,10 @@ pub enum Terrain {
     Ore, // minerai en fr
     Energy,
     Ground,
-    Robot,
+    Scientist,
+    Harvester,
+    Scout,
     Science,
-    CarryingRobot,
     Base,
     Void
 }
@@ -16,14 +17,15 @@ impl Terrain {
         match self {
             Terrain::Wall => '▒',
             Terrain::Mountain => '▓',
-            Terrain::Ore => '♦',
-            Terrain::Ground => ' ', // for debug then ' '
-            Terrain::Energy => '♥',
-            Terrain::Robot => '☻',
-            Terrain::Science => '▲',
-            Terrain::CarryingRobot => '☺',
+            Terrain::Ore => '✧',             //
+            Terrain::Ground => ' ',
+            Terrain::Energy => '𐌔',
+            Terrain::Scientist => '♝',       //
+            Terrain::Harvester => '⛏',
+            Terrain::Scout => '♞',
+            Terrain::Science => '⚛',
             Terrain::Base => '╔',
-            Terrain::Void => '.' // for debug then '.'
+            Terrain::Void => '⛆'
         }
     }
 
@@ -31,12 +33,13 @@ impl Terrain {
         match val {
             '▒' => Terrain::Wall,
             '▓' => Terrain::Mountain,
-            '♦' => Terrain::Ore,
-            ' ' => Terrain::Ground, // for debug then ' '
-            '♥' => Terrain::Energy,
-            '☻' => Terrain::Robot,
-            '▲' => Terrain::Science,
-            '☺' => Terrain::CarryingRobot,
+            '✧' => Terrain::Ore,
+            ' ' => Terrain::Ground,
+            '𐌔' => Terrain::Energy,
+            '♝' => Terrain::Scientist,
+            '⛏' => Terrain::Harvester,
+            '♞' => Terrain::Scout,
+            '⚛' => Terrain::Science,
             '╔' => Terrain::Base,
             _ => Terrain::Void
         }

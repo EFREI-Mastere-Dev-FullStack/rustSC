@@ -126,10 +126,9 @@ impl Game {
                 let mut is_robot = false;
                 for robot in &self.robots {
                     if (x, y) == robot.position().as_tuple() {
-                        let displayed_robot = if !robot.is_carrying() { Terrain::Robot.to_char() } else { Terrain::CarryingRobot.to_char() };
-                        /*let mission = robot.mission().to_string();
-                        let displayed_robot = if mission ==  Robot_type::Scout.to_string() {"S"} else if mission == Robot_type::Harvester.to_string() {"H"} else {"I"};
-                       */ print!("{}", displayed_robot);
+                        let mission = robot.mission().to_string();
+                        let displayed_robot = if mission ==  Robot_type::Scout.to_string() {Terrain::Scout} else if mission == Robot_type::Harvester.to_string() {Terrain::Harvester} else {Terrain::Scientist};
+                        print!("{}", displayed_robot.to_char());
                         is_robot = true;
                         break;
                     }
