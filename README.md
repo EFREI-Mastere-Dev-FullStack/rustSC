@@ -15,5 +15,4 @@ Compilation rapide (compilation time decrease) ;
 
 ## The Game : 
 
-https://github.com/EFREI-Mastere-Dev-FullStack/rust_sc/assets/115480519/21782931-6fcb-4f44-9e7b-f112acb1be35
-
+![Vidéo-sans-titre-‐-Réalisée-avec-Clipchamp-_1_-_online-video-cutter com_-_online-video-cutter com_](https://github.com/EFREI-Mastere-Dev-FullStack/rust_sc/assets/115480519/db745692-ab9b-4165-8194-9ac1c981d3c4)
